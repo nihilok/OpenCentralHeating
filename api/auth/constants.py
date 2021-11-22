@@ -1,6 +1,6 @@
 SUPERUSERS = [1]
 GUEST_IDS = [3]
-TESTING = True  # Uses benign heating system when True
+TESTING = False  # Uses benign heating system when True
 # API will fail if no heating system in place when False
 
 origins = ["https://localhost:4000", "https://app.example.com" "http://localhost:3000"]

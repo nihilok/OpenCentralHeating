@@ -12,6 +12,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi.encoders import jsonable_encoder
 
 from .custom_datetimes import BritishTime
+from .models import HeatingConf, Advance
 from .telegram_bot import send_message
 from ..logger import get_logger
 
