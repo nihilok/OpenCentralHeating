@@ -55,7 +55,7 @@ class WeatherDaySingle(BaseModel):
     dew_point: float
     uvi: float
     clouds: int
-    visibility: int
+    visibility: Optional[int] = None
     wind_speed: float
     wind_deg: int
     wind_gust: float
