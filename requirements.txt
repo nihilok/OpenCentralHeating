@@ -8,3 +8,4 @@ APScheduler~=3.8.1
 uvicorn~=0.15.0
 tortoise-orm
 python-multipart
+python-jose
