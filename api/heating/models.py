@@ -59,7 +59,7 @@ class WeatherDaySingle(BaseModel):
     wind_speed: float
     wind_deg: int
     wind_gust: float
-    weather: list[WeatherDetails]
+    weather: List[WeatherDetails]
 
 
 class DayBreakDown(BaseModel):
