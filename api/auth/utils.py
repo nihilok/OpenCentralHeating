@@ -1,8 +1,6 @@
 import sqlite3
 from getpass import getpass
 
-superusers = [1]
-
 
 def new_user(household: int = 1):
     name = input('name: ')

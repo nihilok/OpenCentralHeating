@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from fastapi import Depends, APIRouter
+from fastapi import Depends, APIRouter, HTTPException
 from pydantic import BaseModel
 
 from ..central_heating import HeatingConf, Advance
@@ -10,7 +10,7 @@ from ..constants import WEATHER_URL, TEMPERATURE_URL, GPIO_PIN
 from ...auth.constants import TESTING
 from ...auth.authentication import get_current_active_user
 from ...auth.models import HouseholdMemberPydantic
-from ...cache.redis_funcs import get_weather, set_weather
+from ...cache import get_weather, set_weather
 from ...utils.async_requests import get_json
 
 
@@ -45,26 +45,7 @@ hs = HeatingSystem(GPIO_PIN, TEMPERATURE_URL)
 router = APIRouter()
 
 
-class WeatherReport(BaseModel):
-    # keys = ['dt', 'sunrise', 'sunset', 'temp', 'feels_like',
-    #         'pressure', 'humidity', 'dew_point', 'uvi', 'clouds',
-    #         'visibility', 'wind_speed', 'wind_deg', 'weather']
-    current: dict
-    daily: List[dict]
-
-
-class ApiInfo(BaseModel):
-    indoor_temp: str
-    temp_float: float
-    outdoor_temp: str = "- -" + "°C"
-    outdoor_float: Optional[float] = None
-    weather: str = "- -"
-    last_updated: str = "--:--:--"
-    on: bool = hs.relay_state
-    program_on: bool = hs.conf.program_on
-    advance: Optional[Advance] = None
-
-
+# Heating endpoints:
 class SensorReadings(BaseModel):
     temperature: float
     pressure: float
@@ -79,19 +60,13 @@ class HeatingInfo(BaseModel):
     conf: Optional[HeatingConf] = None
 
 
-@router.get("/weather/")
-async def weather() -> WeatherReport:
-    weather_dict = await get_weather()
-    if not weather_dict:
-        r = await get_json(WEATHER_URL)
-        weather_dict = {"current": r["current"], "daily": r["daily"]}
-        await set_weather(weather_dict)
-    weather_report = WeatherReport(**weather_dict)
-    return weather_report
+class ConfResponse(BaseModel):
+    conf: HeatingConf
 
 
 @router.get("/heating/", response_model=HeatingInfo)
 async def heating(conf: bool = False):
+    """Get current system information, including live indoor temperature"""
     context = {
         "indoor_temperature": hs.temperature,
         "sensor_readings": hs.measurements,
@@ -103,11 +78,8 @@ async def heating(conf: bool = False):
     return HeatingInfo(**context)
 
 
-class ConfResponse(BaseModel):
-    conf: HeatingConf
-
-
 async def heating_conf():
+    """Returns the current heating configuration"""
     return ConfResponse(conf=hs.conf)
 
 
@@ -115,6 +87,7 @@ async def heating_conf():
 async def update_heating_conf(
     conf: HeatingConf, user: HouseholdMemberPydantic = Depends(get_current_active_user)
 ):
+    """Updates the times and target temperature for heating system"""
     if hs.conf != conf:
         hs.conf.__dict__.update(**conf.dict())
         hs.save_state()
@@ -126,6 +99,7 @@ async def update_heating_conf(
 async def heating_on_off(
     user: HouseholdMemberPydantic = Depends(get_current_active_user),
 ):
+    """Switches heating program on or off"""
     if not hs.conf.program_on:
         hs.program_on()
     else:
@@ -150,3 +124,27 @@ async def cancel_advance(
     """Cancels advance task"""
     hs.cancel_advance()
     return Advance(on=False, relay=hs.relay_state)
+
+
+# Weather endpoint:
+class WeatherReport(BaseModel):
+    current: dict
+    daily: List[dict]
+    # keys = ['dt', 'sunrise', 'sunset', 'temp', 'feels_like',
+    # 'pressure', 'humidity', 'dew_point', 'uvi', 'clouds',
+    # 'visibility', 'wind_speed', 'wind_deg', 'weather']
+
+
+@router.get("/weather/", response_model=Optional[WeatherReport])
+async def weather():
+    """Gets weather info from OpenWeatherMap API or from local cache"""
+    weather_dict = await get_weather()
+    try:
+        if not weather_dict:
+            r = await get_json(WEATHER_URL)
+            weather_dict = {"current": r["current"], "daily": r["daily"]}
+            await set_weather(weather_dict)
+        weather_report = WeatherReport(**weather_dict)
+        return weather_report
+    except KeyError:
+        raise HTTPException(status_code=500, detail='OpenWeatherMap API not setup or not responding')

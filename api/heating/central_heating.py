@@ -41,10 +41,13 @@ class HeatingSystem:
     backup_scheduler = BackgroundScheduler()
     THRESHOLD = 0.2
 
-    def __init__(self, gpio_pin: int, temperature_url: str):
+    def __init__(self, gpio_pin: int, temperature_url: str, raspberry_pi_ip: Optional[str] = None):
         """Create connection with temperature api and load settings
         from config file"""
-        self.pi = pigpio.pi()
+        if raspberry_pi_ip is None:
+            self.pi = pigpio.pi()
+        else:
+            self.pi = pigpio.pi(raspberry_pi_ip)
         self.gpio_pin = gpio_pin
         self.temperature_url = temperature_url
         self.error: list[bool, bool] = [False, False]
@@ -217,6 +220,7 @@ class HeatingSystem:
             self.scheduler.pause()
             self.advance_on = time.time()
             self.conf.advance = Advance(on=True, start=self.advance_on)
+            self.save_state()
             check = self.advance_on
             while check > time.time() - (mins * 60):
                 if self.within_program_time or not self.advance_on:

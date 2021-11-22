@@ -13,4 +13,3 @@ origins = origins + ['*'] if TESTING else origins
 SECRET_KEY = "SomeTHiNGsupERsEcReT!!"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440 # 1 day
-GUEST_IDS = [3]

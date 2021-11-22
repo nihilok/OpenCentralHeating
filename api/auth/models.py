@@ -12,10 +12,6 @@ class Household(Model):
     week = fields.BinaryField(null=True)
 
 
-HouseholdPydantic = pydantic_model_creator(Household, name='Household')
-HouseholdPydanticIn = pydantic_model_creator(Household, name='HouseholdIn', exclude_readonly=True)
-
-
 class HouseholdMember(Model):
     id = fields.IntField(pk=True)
     name = fields.CharField(100, unique=True)
@@ -26,7 +22,9 @@ class HouseholdMember(Model):
         return pwd_context.verify(password, self.password_hash)
 
 
+Tortoise.init_models(["api.auth.models"], "models")
+
+HouseholdPydantic = pydantic_model_creator(Household, name='Household')
+HouseholdPydanticIn = pydantic_model_creator(Household, name='HouseholdIn', exclude_readonly=True)
 HouseholdMemberPydantic = pydantic_model_creator(HouseholdMember, name='HouseholdMember')
 HouseholdMemberPydanticIn = pydantic_model_creator(HouseholdMember, name='HouseholdMemberIn', exclude_readonly=True)
-
-# Tortoise.init_models(["api.auth.models"], "models")
