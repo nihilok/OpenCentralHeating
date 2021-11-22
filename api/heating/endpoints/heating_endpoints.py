@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import List, Optional
 
 from fastapi import Depends, APIRouter, HTTPException
@@ -17,28 +16,7 @@ from ...utils.async_requests import get_json
 if not TESTING:
     from ..central_heating import HeatingSystem
 else:
-    @dataclass
-    class HeatingSystem:
-        gpio_pin: int
-        temperature_url: str
-        conf = HeatingConf(
-            target="20",
-            on_1="08:30",
-            off_1="10:30",
-            on_2="18:30",
-            off_2="22:30",
-            program_on=True,
-        )
-
-        @property
-        def relay_state(self):
-            return self.conf.program_on
-
-        def program_on(self):
-            self.conf.program_on = True
-
-        def program_off(self):
-            self.conf.program_on = False
+    from ..fake_central_heating import HeatingSystem
 
 
 hs = HeatingSystem(GPIO_PIN, TEMPERATURE_URL)
