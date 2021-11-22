@@ -58,7 +58,7 @@ class WeatherDaySingle(BaseModel):
     visibility: Optional[int] = None
     wind_speed: float
     wind_deg: int
-    wind_gust: float
+    wind_gust: Optional[float]
     weather: List[WeatherDetails]
 
 

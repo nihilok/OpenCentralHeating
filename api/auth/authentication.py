@@ -7,13 +7,14 @@ from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
-
+import json
+import logging
 from .constants import (
     SECRET_KEY,
     ALGORITHM,
     GUEST_IDS,
     SUPERUSERS,
-    ACCESS_TOKEN_EXPIRE_MINUTES,
+    ACCESS_TOKEN_EXPIRE_DAYS,
 )
 from .models import (
     HouseholdMember,
@@ -21,7 +22,7 @@ from .models import (
     HouseholdMemberPydanticIn,
     PasswordChange,
 )
-
+logging.basicConfig(level=logging.DEBUG)
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -78,6 +79,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 def decode_jwt(token: str) -> dict:
     try:
         decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        logging.debug(json.dumps(decoded_token))
         return decoded_token if decoded_token["expires"] >= time.time() else None
     except Exception:
         return {"message": "token expired, please log in again"}
@@ -119,7 +121,7 @@ async def login_for_access_token(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
     access_token = create_access_token(
         data={"sub": user.name}, expires_delta=access_token_expires
     )
@@ -132,6 +134,7 @@ async def check_token(token: Token) -> Token:
         token.access_token = token.access_token[1:-1]
     user = await get_current_user(token.access_token)
     if user:
+        logging.debug(f'user found: {user.id}')
         return token
 
 

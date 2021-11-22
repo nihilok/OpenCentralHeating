@@ -1,11 +1,6 @@
-import hashlib
-import aioredis
+import json
 import asyncio
-
-cache = None
-
-async def create_token(host, platform):
-    return hashlib.sha256((str(host) + str(platform)).encode('utf-8')).hexdigest()
+import aioredis
 
 
 async def main():
@@ -38,3 +33,14 @@ async def get_keys():
 
 async def delete_key(key):
     await cache.delete(key)
+
+
+
+async def set_weather(weather_dict: dict):
+    await cache.execute('set', 'weather', json.dumps(weather_dict), 'ex', 900)
+
+
+async def get_weather():
+    w = await get_item('weather')
+    if w:
+        return json.loads(w)
