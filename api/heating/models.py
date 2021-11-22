@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel
 
@@ -79,4 +79,4 @@ class WeatherDay(WeatherDaySingle):
 
 class WeatherReport(BaseModel):
     current: WeatherDaySingle
-    daily: list[WeatherDay]
+    daily: List[WeatherDay]
