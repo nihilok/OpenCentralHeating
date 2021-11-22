@@ -15,6 +15,7 @@ class HeatingSystem:
         off_2="22:30",
         program_on=True,
     )
+    advance_on = None
 
     @property
     def temperature(self):

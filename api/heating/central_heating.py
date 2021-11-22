@@ -261,6 +261,7 @@ class HeatingSystem:
                 on_2="20:30",
                 off_2="22:30",
                 program_on=True,
+                advance_on=Advance(on=False)
             )
             with open(self.config_file, "w") as f:
                 json.dump(jsonable_encoder(conf), f)
