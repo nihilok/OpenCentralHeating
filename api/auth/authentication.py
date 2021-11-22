@@ -15,7 +15,7 @@ from .constants import (
     SUPERUSERS,
     ACCESS_TOKEN_EXPIRE_MINUTES,
 )
-from .models import HouseholdMember, HouseholdMemberPydantic, HouseholdMemberPydanticIn
+from .models import HouseholdMember, HouseholdMemberPydantic, HouseholdMemberPydanticIn, PasswordChange
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -155,3 +155,14 @@ async def create_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="You need to be a superuser to create another user.",
         )
+
+
+@router.post('/password_change/')
+async def change_password(body: PasswordChange, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
+    user = await HouseholdMember.get(id=user.id)
+    if not user.verify_password(body.current_password):
+        raise HTTPException(status_code=401)
+    if not body.new_password == body.password_check:
+        raise HTTPException(status_code=422)
+    user.password_hash = get_password_hash(body.new_password)
+    return {'message': 'Password changed'}
