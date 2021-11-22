@@ -10,29 +10,12 @@ import pigpio
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel
 
 from .custom_datetimes import BritishTime
 from .telegram_bot import send_message
 from ..logger import get_logger
 
 logger = get_logger()
-
-
-class Advance(BaseModel):
-    on: bool = False
-    start: Optional[int] = None
-    relay: Optional[bool] = None
-
-
-class HeatingConf(BaseModel):
-    on_1: str
-    off_1: str
-    on_2: Optional[str] = None
-    off_2: Optional[str] = None
-    target: int = 20
-    program_on: bool = True
-    advance: Optional[Advance] = None
 
 
 class HeatingSystem:

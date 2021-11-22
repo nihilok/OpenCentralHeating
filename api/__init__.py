@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .auth.constants import origins
 from .auth import router as auth_router
 from .secrets import router as secrets_router
-from .heating.endpoints import router as heating_router
+from .heating import router as heating_router
 
 
 # Create ASGI app:

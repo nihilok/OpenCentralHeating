@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from api.heating.central_heating import HeatingConf
+from .models import HeatingConf
 
 
 @dataclass

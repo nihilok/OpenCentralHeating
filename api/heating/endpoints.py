@@ -1,45 +1,25 @@
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import Depends, APIRouter, HTTPException
-from pydantic import BaseModel
 
-from ..central_heating import HeatingConf, Advance
-from ..constants import WEATHER_URL, TEMPERATURE_URL, GPIO_PIN
+from api.heating.constants import WEATHER_URL, TEMPERATURE_URL, GPIO_PIN
+from .models import Advance, HeatingConf, HeatingInfo, ConfResponse, WeatherReport
 
-from ...auth.constants import TESTING
-from ...auth.authentication import get_current_active_user
-from ...auth.models import HouseholdMemberPydantic
-from ...cache import get_weather, set_weather
-from ...utils.async_requests import get_json
+from ..auth.constants import TESTING
+from ..auth.authentication import get_current_active_user
+from ..auth.models import HouseholdMemberPydantic
+from ..cache import get_weather, set_weather
+from ..utils.async_requests import get_json
 
 
 if not TESTING:
-    from ..central_heating import HeatingSystem
+    from .central_heating import HeatingSystem
 else:
-    from ..fake_central_heating import HeatingSystem
+    from .fake_central_heating import HeatingSystem
 
 
 hs = HeatingSystem(GPIO_PIN, TEMPERATURE_URL)
 router = APIRouter()
-
-
-# Heating endpoints:
-class SensorReadings(BaseModel):
-    temperature: float
-    pressure: float
-    humidity: float
-
-
-class HeatingInfo(BaseModel):
-    indoor_temperature: float
-    sensor_readings: SensorReadings
-    relay_on: bool
-    advance: Optional[Advance] = None
-    conf: Optional[HeatingConf] = None
-
-
-class ConfResponse(BaseModel):
-    conf: HeatingConf
 
 
 @router.get("/heating/", response_model=HeatingInfo)
@@ -105,14 +85,6 @@ async def cancel_advance(
 
 
 # Weather endpoint:
-class WeatherReport(BaseModel):
-    current: dict
-    daily: List[dict]
-    # keys = ['dt', 'sunrise', 'sunset', 'temp', 'feels_like',
-    # 'pressure', 'humidity', 'dew_point', 'uvi', 'clouds',
-    # 'visibility', 'wind_speed', 'wind_deg', 'weather']
-
-
 @router.get("/weather/", response_model=Optional[WeatherReport])
 async def weather():
     """Gets weather info from OpenWeatherMap API or from local cache"""
