@@ -23,7 +23,7 @@ class HeatingSystem:
 
     @property
     def measurements(self):
-        return {'temperature': self.temperature, 'pressure': 0, 'humidity': 0}
+        return {"temperature": self.temperature, "pressure": 0, "humidity": 0}
 
     @property
     def relay_state(self):

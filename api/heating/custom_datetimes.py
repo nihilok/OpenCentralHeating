@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 class BritishTime(datetime):
-    timezone = pytz.timezone('Europe/London')
+    timezone = pytz.timezone("Europe/London")
 
     @classmethod
     def dst(cls, dt: Optional[datetime] = None):
@@ -23,6 +23,6 @@ class BritishTime(datetime):
         return time + cls.dst(time)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     bst = BritishTime.now()
     print(bst)

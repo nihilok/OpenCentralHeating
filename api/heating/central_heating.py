@@ -24,7 +24,9 @@ class HeatingSystem:
     backup_scheduler = BackgroundScheduler()
     THRESHOLD = 0.2
 
-    def __init__(self, gpio_pin: int, temperature_url: str, raspberry_pi_ip: Optional[str] = None):
+    def __init__(
+        self, gpio_pin: int, temperature_url: str, raspberry_pi_ip: Optional[str] = None
+    ):
         """Create connection with temperature api and load settings
         from config file"""
         if raspberry_pi_ip is None:
@@ -67,10 +69,10 @@ class HeatingSystem:
     def thermostat_control(self):
         check = self.too_cold
         if check is True:
-            logger.debug('too cold')
+            logger.debug("too cold")
             self.switch_on_relay()
         elif check is False:
-            logger.debug('warm enough')
+            logger.debug("warm enough")
             self.switch_off_relay()
 
     def main_loop(self):
@@ -86,10 +88,10 @@ class HeatingSystem:
         """Turns on heating if house is below 5'C to prevent ice damage"""
         temp = float(self.temperature)
         if temp < 5:
-            logger.debug('Frost stat warning (below 5`C)')
+            logger.debug("Frost stat warning (below 5`C)")
             self.switch_on_relay()
         elif temp > 6:
-            logger.debug('Frost stat warning resolved (above 6`C)')
+            logger.debug("Frost stat warning resolved (above 6`C)")
             self.switch_off_relay()
 
     def program_on(self):
@@ -189,17 +191,17 @@ class HeatingSystem:
 
     def switch_on_relay(self):
         if not self.relay_state:
-            logger.debug('Switching on relay')
+            logger.debug("Switching on relay")
             self.pi.write(self.gpio_pin, 1)
 
     def switch_off_relay(self):
         if self.relay_state:
-            logger.debug('Switching off relay')
+            logger.debug("Switching off relay")
             self.pi.write(self.gpio_pin, 0)
 
     async def async_advance(self, mins: int = 30):
         if not self.advance_on:
-            logger.debug('Advance starting')
+            logger.debug("Advance starting")
             self.scheduler.pause()
             self.advance_on = time.time()
             self.conf.advance = Advance(on=True, start=self.advance_on)
@@ -211,14 +213,14 @@ class HeatingSystem:
                     break
                 self.thermostat_control()
                 await asyncio.sleep(60)
-        logger.debug('Advance already started')
+        logger.debug("Advance already started")
 
     async def start_advance(self, mins: int = 30):
         loop = asyncio.get_running_loop()
         loop.create_task(self.async_advance(mins))
         while not self.advance_on:
             await asyncio.sleep(0.1)
-        logger.debug(f'Started at {BritishTime.fromtimestamp(self.advance_on)}')
+        logger.debug(f"Started at {BritishTime.fromtimestamp(self.advance_on)}")
         return self.advance_on
 
     def cancel_advance(self):
@@ -226,7 +228,7 @@ class HeatingSystem:
         self.advance_on = None
         self.conf.advance = Advance(on=False)
         self.scheduler.resume()
-        logger.debug('Advance cancelled')
+        logger.debug("Advance cancelled")
         self.main_loop()
         self.save_state()
 
@@ -244,7 +246,7 @@ class HeatingSystem:
                 on_2="20:30",
                 off_2="22:30",
                 program_on=True,
-                advance_on=Advance(on=False)
+                advance_on=Advance(on=False),
             )
             with open(self.config_file, "w") as f:
                 json.dump(jsonable_encoder(conf), f)

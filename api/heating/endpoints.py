@@ -97,4 +97,6 @@ async def weather():
         weather_report = WeatherReport(**weather_dict)
         return weather_report
     except KeyError:
-        raise HTTPException(status_code=500, detail='OpenWeatherMap API not setup or not responding')
+        raise HTTPException(
+            status_code=500, detail="OpenWeatherMap API not setup or not responding"
+        )
