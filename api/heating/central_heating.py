@@ -216,7 +216,6 @@ class HeatingSystem:
     async def async_advance(self, mins: int = 30):
         if not self.advance_on:
             logger.debug("Advance starting")
-            # self.scheduler.pause()
             self.advance_on = time.time()
             self.conf.advance = Advance(on=True, start=self.advance_on)
             self.save_state()
