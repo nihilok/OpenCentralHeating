@@ -8,7 +8,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 import json
-import logging
+from ..logger import get_logger
 from .constants import (
     SECRET_KEY,
     ALGORITHM,
@@ -22,11 +22,11 @@ from .models import (
     HouseholdMemberPydanticIn,
     PasswordChange,
 )
-logging.basicConfig(level=logging.DEBUG)
+
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
+logger = get_logger()
 
 credentials_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -65,12 +65,10 @@ async def authenticate_user(
         return None
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(data: dict):
     to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+    expires_delta = timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
+    expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -79,7 +77,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 def decode_jwt(token: str) -> dict:
     try:
         decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        logging.debug(json.dumps(decoded_token))
+        logger.info(json.dumps(decoded_token))
         return decoded_token if decoded_token["expires"] >= time.time() else None
     except Exception:
         return {"message": "token expired, please log in again"}
@@ -121,21 +119,17 @@ async def login_for_access_token(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
-    access_token_expires = timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
-    access_token = create_access_token(
-        data={"sub": user.name}, expires_delta=access_token_expires
-    )
+    access_token = create_access_token(data={"sub": user.name})
     return Token(access_token=access_token, token_type="bearer")
 
 
-@router.post("/check_token/")
-async def check_token(token: Token) -> Token:
-    if token.access_token.startswith('"'):
-        token.access_token = token.access_token[1:-1]
-    user = await get_current_user(token.access_token)
-    if user:
-        logging.debug(f'user found: {user.id}')
-        return token
+@router.get("/check_token/")
+async def check_token(
+    user: HouseholdMemberPydantic = Depends(get_current_active_user),
+):
+    logger.info(f"user found: {user.id}")
+    access_token = create_access_token(data={"sub": user.name})
+    return Token(access_token=access_token, token_type="bearer")
 
 
 async def check_superuser(
