@@ -44,14 +44,6 @@ class HeatingSystem:
         else:
             self.program_off()
 
-    @property
-    def temperature(self) -> float:
-        return float(self.get_measurements()["temperature"])
-
-    @property
-    def relay_state(self) -> bool:
-        return not not self.pi.read(self.gpio_pin)
-
     def get_measurements(self) -> dict:
         """Gets measurements from temperature sensor and handles errors,
         by returning the last known set of measurements or a default"""
@@ -75,6 +67,34 @@ class HeatingSystem:
                 send_message(log_msg)
                 self.error[1] = True
             return {"temperature": 20, "pressure": 0, "humidity": 0}
+
+    def get_or_create_config(self):
+        try:
+            with open(self.config_file, "r") as f:
+                file_dict = json.load(f)
+                conf = HeatingConf(**file_dict)
+        except Exception as e:
+            logging.error(str(e))
+            conf = HeatingConf(
+                target=20,
+                on_1="06:30",
+                off_1="08:30",
+                on_2="20:30",
+                off_2="22:30",
+                program_on=True,
+                advance_on=Advance(on=False),
+            )
+            with open(self.config_file, "w") as f:
+                json.dump(jsonable_encoder(conf), f)
+        return conf
+
+    @property
+    def temperature(self) -> float:
+        return float(self.get_measurements()["temperature"])
+
+    @property
+    def relay_state(self) -> bool:
+        return not not self.pi.read(self.gpio_pin)
 
     @property
     def within_program_time(self) -> bool:
@@ -138,26 +158,6 @@ class HeatingSystem:
         if self.relay_state:
             logger.debug("Switching off relay")
             self.pi.write(self.gpio_pin, 0)
-
-    def get_or_create_config(self):
-        try:
-            with open(self.config_file, "r") as f:
-                file_dict = json.load(f)
-                conf = HeatingConf(**file_dict)
-        except Exception as e:
-            logging.error(str(e))
-            conf = HeatingConf(
-                target=20,
-                on_1="06:30",
-                off_1="08:30",
-                on_2="20:30",
-                off_2="22:30",
-                program_on=True,
-                advance_on=Advance(on=False),
-            )
-            with open(self.config_file, "w") as f:
-                json.dump(jsonable_encoder(conf), f)
-        return conf
 
     def save_state(self):
         with open(self.config_file, "w") as f:
