@@ -45,29 +45,12 @@ class HeatingSystem:
             self.program_off()
 
     @property
-    def too_cold(self) -> Optional[bool]:
-        return self.check_temp()
-
-    @property
-    def within_program_time(self) -> bool:
-        return self.check_time()
-
-    @property
     def temperature(self) -> float:
         return float(self.get_measurements()["temperature"])
 
     @property
     def relay_state(self) -> bool:
         return not not self.pi.read(self.gpio_pin)
-
-    async def thermostat_control(self):
-        check = self.too_cold
-        if check is True:
-            logger.debug("too cold")
-            self.switch_on_relay()
-        elif check is False:
-            logger.debug("warm enough")
-            self.switch_off_relay()
 
     def get_measurements(self) -> dict:
         """Gets measurements from temperature sensor and handles errors,
@@ -93,21 +76,8 @@ class HeatingSystem:
                 self.error[1] = True
             return {"temperature": 20, "pressure": 0, "humidity": 0}
 
-    def check_temp(self) -> Optional[bool]:
-        target = float(self.conf.target)
-        current = self.temperature
-        msg = f"target: {target}, current: {current}"
-        logger.debug(msg)
-        if target - self.THRESHOLD > current:
-            return True
-        elif target <= current:
-            return False
-
-    @staticmethod
-    def parse_time(time_: str) -> datetime.time:
-        return datetime.strptime(time_, "%H:%M").time()
-
-    def check_time(self) -> bool:
+    @property
+    def within_program_time(self) -> bool:
         if not self.conf.program_on:
             return False
         time_now = BritishTime.now().time()
@@ -128,13 +98,24 @@ class HeatingSystem:
                 return True
         except ValueError:
             logger.warning(
-                f"ValueError while checking time (times: {self.conf.on_1,self.conf.off_1,self.conf.on_2,self.conf.off_2})"
+                f"ValueError while checking time (times: {self.conf.on_1, self.conf.off_1, self.conf.on_2, self.conf.off_2})"
             )
             return False
 
-    def save_state(self):
-        with open(self.config_file, "w") as f:
-            json.dump(jsonable_encoder(self.conf), f)
+    @property
+    def too_cold(self) -> Optional[bool]:
+        target = float(self.conf.target)
+        current = self.temperature
+        msg = f"target: {target}, current: {current}"
+        logger.debug(msg)
+        if target - self.THRESHOLD > current:
+            return True
+        elif target <= current:
+            return False
+
+    @staticmethod
+    def parse_time(time_: str) -> datetime.time:
+        return datetime.strptime(time_, "%H:%M").time()
 
     def change_times(self, on1, off1, on2=None, off2=None):
         """Accept times in format HH:MM or None for set 2"""
@@ -158,37 +139,6 @@ class HeatingSystem:
             logger.debug("Switching off relay")
             self.pi.write(self.gpio_pin, 0)
 
-    async def async_advance(self, mins: int = 30):
-        if not self.advance_on:
-            logger.debug("Advance starting")
-            # self.scheduler.pause()
-            self.advance_on = time.time()
-            self.conf.advance = Advance(on=True, start=self.advance_on)
-            self.save_state()
-            check = self.advance_on
-            while check > time.time() - (mins * 60):
-                if self.within_program_time or not self.advance_on:
-                    self.cancel_advance()
-                    break
-                await self.thermostat_control()
-                await asyncio.sleep(60)
-        logger.debug("Advance already started")
-
-    async def start_advance(self, mins: int = 30):
-        loop = asyncio.get_running_loop()
-        loop.create_task(self.async_advance(mins))
-        while not self.advance_on:
-            await asyncio.sleep(0.1)
-        logger.debug(f"Started at {BritishTime.fromtimestamp(self.advance_on)}")
-        return self.advance_on
-
-    def cancel_advance(self):
-        self.thread = None
-        self.advance_on = None
-        self.conf.advance = Advance(on=False)
-        logger.debug("Advance cancelled")
-        self.save_state()
-
     def get_or_create_config(self):
         try:
             with open(self.config_file, "r") as f:
@@ -209,9 +159,22 @@ class HeatingSystem:
                 json.dump(jsonable_encoder(conf), f)
         return conf
 
+    def save_state(self):
+        with open(self.config_file, "w") as f:
+            json.dump(jsonable_encoder(self.conf), f)
+
+    async def thermostat_control(self):
+        check = self.too_cold
+        if check is True:
+            logger.debug("too cold")
+            self.switch_on_relay()
+        elif check is False:
+            logger.debug("warm enough")
+            self.switch_off_relay()
+
     async def async_main_task(self):
         """If time is within range, turn on relay if temp is below range,
-                turn off if above range."""
+        turn off if above range."""
         if self.within_program_time:
             await self.thermostat_control()
         else:
@@ -248,4 +211,35 @@ class HeatingSystem:
         self.conf.program_on = False
         loop = asyncio.get_running_loop()
         loop.create_task(self.async_main_loop(self.PROGRAM_LOOP_INTERVAL))
+        self.save_state()
+
+    async def async_advance(self, mins: int = 30):
+        if not self.advance_on:
+            logger.debug("Advance starting")
+            # self.scheduler.pause()
+            self.advance_on = time.time()
+            self.conf.advance = Advance(on=True, start=self.advance_on)
+            self.save_state()
+            check = self.advance_on
+            while check > time.time() - (mins * 60):
+                if self.within_program_time or not self.advance_on:
+                    self.cancel_advance()
+                    break
+                await self.thermostat_control()
+                await asyncio.sleep(60)
+        logger.debug("Advance already started")
+
+    async def start_advance(self, mins: int = 30):
+        loop = asyncio.get_running_loop()
+        loop.create_task(self.async_advance(mins))
+        while not self.advance_on:
+            await asyncio.sleep(0.1)
+        logger.debug(f"Started at {BritishTime.fromtimestamp(self.advance_on)}")
+        return self.advance_on
+
+    def cancel_advance(self):
+        self.thread = None
+        self.advance_on = None
+        self.conf.advance = Advance(on=False)
+        logger.debug("Advance cancelled")
         self.save_state()
