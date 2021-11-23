@@ -198,7 +198,7 @@ class HeatingSystem:
 
     async def async_backup_loop(self, interval: int = 60):
         while not self.conf.program_on:
-            await self.async_main_task()
+            await self.async_backup_task()
             await asyncio.sleep(interval)
 
     def program_on(self):
@@ -210,7 +210,7 @@ class HeatingSystem:
     def program_off(self):
         self.conf.program_on = False
         loop = asyncio.get_running_loop()
-        loop.create_task(self.async_main_loop(self.PROGRAM_LOOP_INTERVAL))
+        loop.create_task(self.async_backup_loop(self.PROGRAM_LOOP_INTERVAL))
         self.save_state()
 
     async def async_advance(self, mins: int = 30):
