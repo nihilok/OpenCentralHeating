@@ -8,7 +8,7 @@ from typing import Optional
 
 import pigpio
 import requests
-from apscheduler.schedulers.background import BackgroundScheduler
+# from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi.encoders import jsonable_encoder
 
 from .custom_datetimes import BritishTime
@@ -21,9 +21,10 @@ logger = get_logger()
 
 class HeatingSystem:
     config_file = os.path.abspath(os.getcwd()) + "/api/heating/heating.conf"
-    scheduler = BackgroundScheduler()
-    backup_scheduler = BackgroundScheduler()
+    # scheduler = BackgroundScheduler()
+    # backup_scheduler = BackgroundScheduler()
     THRESHOLD = 0.2
+    PROGRAM_LOOP_INTERVAL = 60
 
     def __init__(
         self, gpio_pin: int, temperature_url: str, raspberry_pi_ip: Optional[str] = None
@@ -41,15 +42,16 @@ class HeatingSystem:
         self.measurements = self.get_measurements()
         self.advance_on = None
         self.thread = None
-        self.scheduler.add_job(self.main_loop, "interval", minutes=1, id="main_loop")
-        self.scheduler.start(paused=True)
-        self.backup_scheduler.add_job(
-            self.backup_loop, "interval", minutes=5, id="backup_loop"
-        )
+        # self.scheduler.add_job(self.main_loop, "interval", minutes=1, id="main_loop")
+        # self.scheduler.start(paused=True)
+        # self.backup_scheduler.add_job(
+        #     self.backup_loop, "interval", minutes=5, id="backup_loop"
+        # )
         if self.conf.program_on:
             self.program_on()
         else:
-            self.backup_scheduler.start()
+            # self.backup_scheduler.start()
+            self.program_off()
 
     @property
     def too_cold(self) -> Optional[bool]:
@@ -67,7 +69,16 @@ class HeatingSystem:
     def relay_state(self) -> bool:
         return not not self.pi.read(self.gpio_pin)
 
-    def thermostat_control(self):
+    # def thermostat_control(self):
+    #     check = self.too_cold
+    #     if check is True:
+    #         logger.debug("too cold")
+    #         self.switch_on_relay()
+    #     elif check is False:
+    #         logger.debug("warm enough")
+    #         self.switch_off_relay()
+
+    async def thermostat_control(self):
         check = self.too_cold
         if check is True:
             logger.debug("too cold")
@@ -76,40 +87,40 @@ class HeatingSystem:
             logger.debug("warm enough")
             self.switch_off_relay()
 
-    def main_loop(self):
-        """If time is within range, turn on relay if temp is below range,
-        turn off if above range."""
-        if self.within_program_time:
-            self.thermostat_control()
-        else:
-            if not self.advance_on:
-                self.switch_off_relay()
-
-    def backup_loop(self):
-        """Turns on heating if house is below 5'C to prevent ice damage"""
-        temp = float(self.temperature)
-        if temp < 5:
-            logger.debug("Frost stat warning (below 5`C)")
-            self.switch_on_relay()
-        elif temp > 6:
-            logger.debug("Frost stat warning resolved (above 6`C)")
-            self.switch_off_relay()
-
-    def program_on(self):
-        self.conf.program_on = True
-        self.main_loop()
-        self.scheduler.resume()
-        if self.backup_scheduler.running:
-            self.backup_scheduler.shutdown()
-        self.save_state()
-
-    def program_off(self):
-        self.conf.program_on = False
-        if not self.advance_on:
-            self.switch_off_relay()
-        self.scheduler.pause()
-        self.backup_scheduler.start()
-        self.save_state()
+    # def main_loop(self):
+    #     """If time is within range, turn on relay if temp is below range,
+    #     turn off if above range."""
+    #     if self.within_program_time:
+    #         self.thermostat_control()
+    #     else:
+    #         if not self.advance_on:
+    #             self.switch_off_relay()
+    #
+    # def backup_loop(self):
+    #     """Turns on heating if house is below 5'C to prevent ice damage"""
+    #     temp = float(self.temperature)
+    #     if temp < 5:
+    #         logger.debug("Frost stat warning (below 5`C)")
+    #         self.switch_on_relay()
+    #     elif temp > 6:
+    #         logger.debug("Frost stat warning resolved (above 6`C)")
+    #         self.switch_off_relay()
+    #
+    # def program_on(self):
+    #     self.conf.program_on = True
+    #     self.main_loop()
+    #     self.scheduler.resume()
+    #     if self.backup_scheduler.running:
+    #         self.backup_scheduler.shutdown()
+    #     self.save_state()
+    #
+    # def program_off(self):
+    #     self.conf.program_on = False
+    #     if not self.advance_on:
+    #         self.switch_off_relay()
+    #     self.scheduler.pause()
+    #     self.backup_scheduler.start()
+    #     self.save_state()
 
     def get_measurements(self) -> dict:
         """Gets measurements from temperature sensor and handles errors,
@@ -146,8 +157,8 @@ class HeatingSystem:
             return False
 
     @staticmethod
-    def parse_time(time: str) -> datetime.time:
-        return datetime.strptime(time, "%H:%M").time()
+    def parse_time(time_: str) -> datetime.time:
+        return datetime.strptime(time_, "%H:%M").time()
 
     def check_time(self) -> bool:
         if not self.conf.program_on:
@@ -203,7 +214,7 @@ class HeatingSystem:
     async def async_advance(self, mins: int = 30):
         if not self.advance_on:
             logger.debug("Advance starting")
-            self.scheduler.pause()
+            # self.scheduler.pause()
             self.advance_on = time.time()
             self.conf.advance = Advance(on=True, start=self.advance_on)
             self.save_state()
@@ -212,7 +223,7 @@ class HeatingSystem:
                 if self.within_program_time or not self.advance_on:
                     self.cancel_advance()
                     break
-                self.thermostat_control()
+                await self.thermostat_control()
                 await asyncio.sleep(60)
         logger.debug("Advance already started")
 
@@ -228,9 +239,8 @@ class HeatingSystem:
         self.thread = None
         self.advance_on = None
         self.conf.advance = Advance(on=False)
-        self.scheduler.resume()
+        # self.scheduler.resume()
         logger.debug("Advance cancelled")
-        self.main_loop()
         self.save_state()
 
     def get_or_create_config(self):
@@ -252,3 +262,44 @@ class HeatingSystem:
             with open(self.config_file, "w") as f:
                 json.dump(jsonable_encoder(conf), f)
         return conf
+
+    async def async_main_task(self):
+        """If time is within range, turn on relay if temp is below range,
+                turn off if above range."""
+        if self.within_program_time:
+            await self.thermostat_control()
+        else:
+            if not self.advance_on:
+                self.switch_off_relay()
+
+    async def async_backup_task(self):
+        """Turns on heating if house is below 5'C to prevent ice damage"""
+        temp = float(self.temperature)
+        if temp < 5:
+            logger.debug("Frost stat warning (below 5`C)")
+            self.switch_on_relay()
+        elif temp > 6:
+            logger.debug("Frost stat warning resolved (above 6`C)")
+            self.switch_off_relay()
+
+    async def async_main_loop(self, interval: int = 60):
+        while self.conf.program_on:
+            await self.async_main_task()
+            await asyncio.sleep(interval)
+
+    async def async_backup_loop(self, interval: int = 60):
+        while not self.conf.program_on:
+            await self.async_main_task()
+            await asyncio.sleep(interval)
+
+    def program_on(self):
+        self.conf.program_on = True
+        loop = asyncio.get_running_loop()
+        loop.create_task(self.async_main_loop(self.PROGRAM_LOOP_INTERVAL))
+        self.save_state()
+
+    def program_off(self):
+        self.conf.program_on = False
+        loop = asyncio.get_running_loop()
+        loop.create_task(self.async_main_loop(self.PROGRAM_LOOP_INTERVAL))
+        self.save_state()
