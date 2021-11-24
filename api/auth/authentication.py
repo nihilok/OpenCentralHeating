@@ -21,7 +21,9 @@ from .models import (
     HouseholdMemberPydanticIn,
     PasswordChange,
 )
+from ..logger import get_logger
 
+logger = get_logger()
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
