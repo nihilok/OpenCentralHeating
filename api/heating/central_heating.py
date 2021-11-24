@@ -195,7 +195,6 @@ class HeatingSystem:
         while self.conf.program_on:
             await self.main_task()
             await asyncio.sleep(interval)
-        await self.main_task()
         logger.info("Main loop ended (program off)")
 
     async def backup_loop(self, interval: int = 300):
@@ -213,6 +212,7 @@ class HeatingSystem:
 
     def program_off(self):
         self.conf.program_on = False
+        await self.main_task()
         loop = asyncio.get_running_loop()
         loop.create_task(self.backup_loop())
         self.save_state()
