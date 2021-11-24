@@ -232,7 +232,7 @@ class HeatingSystem:
             check = self.advance_on
             while check > time.time() - (mins * 60):
                 if self.within_program_time or not self.advance_on:
-                    self.cancel_advance()
+                    await self.cancel_advance()
                     break
                 await self.thermostat_control()
                 await asyncio.sleep(60)
@@ -248,7 +248,7 @@ class HeatingSystem:
         logger.info(f"Advance started at {BritishTime.fromtimestamp(self.advance_on)}")
         return self.advance_on
 
-    def cancel_advance(self):
+    async def cancel_advance(self):
         self.thread = None
         self.advance_on = None
         self.conf.advance = Advance(on=False)
