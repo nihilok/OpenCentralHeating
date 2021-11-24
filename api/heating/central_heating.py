@@ -96,7 +96,8 @@ class HeatingSystem:
             self.save_state()
             await self.main_task()
             logger.info(f"Heating configuration updated: new config: {json.dumps(jsonable_encoder(new_config))}")
-        logger.info('Heating configuration not updated (equal configuration supplied)')
+        else:
+            logger.info('Heating configuration not updated (equal configuration supplied)')
 
     @property
     def temperature(self) -> float:
