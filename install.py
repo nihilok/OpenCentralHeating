@@ -7,11 +7,12 @@ import sys
 try:
     UID = int(sys.argv[-1])
 except Exception:
+    print('Using default UID (1000) for permissions')
     UID = 1000
 
 LOG_DIR = '/var/log/heating'
 try:
-    os.makedirs(LOG_DIR, mode=0o777)
+    os.makedirs(LOG_DIR, mode=0o665)
 except FileExistsError:
     print('WARNING: Log directory already exists')
 os.chdir(LOG_DIR)
