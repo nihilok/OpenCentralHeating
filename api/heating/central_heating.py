@@ -2,7 +2,6 @@ import asyncio
 import json
 import os
 import time
-from datetime import datetime
 from typing import Optional
 
 import pigpio
@@ -95,9 +94,13 @@ class HeatingSystem:
             self.conf.__dict__.update(**new_config.dict())
             self.save_state()
             await self.main_task()
-            logger.info(f"Heating configuration updated: new config: {json.dumps(jsonable_encoder(new_config))}")
+            logger.info(
+                f"Heating configuration updated: new config: {json.dumps(jsonable_encoder(new_config))}"
+            )
         else:
-            logger.info('Heating configuration not updated (equal configuration supplied)')
+            logger.info(
+                "Heating configuration not updated (equal configuration supplied)"
+            )
 
     @property
     def temperature(self) -> float:
