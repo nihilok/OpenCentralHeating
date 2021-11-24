@@ -1,7 +1,6 @@
 import asyncio
 import json
 import os
-import logging
 import time
 from datetime import datetime
 from typing import Optional
@@ -66,6 +65,7 @@ class HeatingSystem:
                 logger.error(log_msg)
                 send_message(log_msg)
                 self.error[1] = True
+                logger.warning('Using default measurements')
             return {"temperature": 20, "pressure": 0, "humidity": 0}
 
     def get_or_create_config(self):
@@ -73,8 +73,9 @@ class HeatingSystem:
             with open(self.config_file, "r") as f:
                 file_dict = json.load(f)
                 conf = HeatingConf(**file_dict)
+            logger.info('Config loaded from file')
         except Exception as e:
-            logging.error(str(e))
+            logger.error(str(e))
             conf = HeatingConf(
                 target=20,
                 on_1="06:30",
@@ -86,6 +87,7 @@ class HeatingSystem:
             )
             with open(self.config_file, "w") as f:
                 json.dump(jsonable_encoder(conf), f)
+            logger.warning('New config created from scratch')
         return conf
 
     @property
@@ -144,10 +146,15 @@ class HeatingSystem:
         self.conf.on_2 = on2
         self.conf.off_2 = off2
         self.save_state()
+        logger.info(
+            f"Program changed: new time{'s' if on2 else ''} "
+            f"{on1}->{off1}{f', {on2}->{off2}' if on2 else ''}"
+        )
 
     def change_temp(self, temp: int):
         self.conf.target = temp
         self.save_state()
+        logger.info(f"Target temperature changed: new temp: {temp}'C")
 
     def switch_on_relay(self):
         if not self.relay_state:
@@ -185,10 +192,10 @@ class HeatingSystem:
         """Turns on heating if house is below 5'C to prevent ice damage"""
         temp = float(self.temperature)
         if temp < 5:
-            logger.debug("Frost stat warning (below 5`C)")
+            logger.info("Frost stat warning (below 5`C)")
             self.switch_on_relay()
         elif temp > 6 and self.relay_state:
-            logger.debug("Frost stat warning resolved (above 6`C)")
+            logger.info("Frost stat warning resolved (above 6`C)")
             self.switch_off_relay()
 
     async def main_loop(self, interval: int = 60):
@@ -196,13 +203,13 @@ class HeatingSystem:
             await self.main_task()
             await asyncio.sleep(interval)
         await self.main_task()
-        logger.info('Main loop ended (program off)')
+        logger.info("Main loop ended (program off)")
 
-    async def backup_loop(self, interval: int = 60):
+    async def backup_loop(self, interval: int = 300):
         while not self.conf.program_on and not self.advance_on:
             await self.backup_task()
             await asyncio.sleep(interval)
-        logger.info('Backup loop ended (program on)')
+        logger.info("Backup loop ended (program on)")
 
     def program_on(self):
         self.conf.program_on = True
@@ -213,7 +220,7 @@ class HeatingSystem:
     def program_off(self):
         self.conf.program_on = False
         loop = asyncio.get_running_loop()
-        loop.create_task(self.backup_loop(self.PROGRAM_LOOP_INTERVAL))
+        loop.create_task(self.backup_loop())
         self.save_state()
 
     async def advance(self, mins: int = 30):
@@ -229,7 +236,9 @@ class HeatingSystem:
                     break
                 await self.thermostat_control()
                 await asyncio.sleep(60)
-        logger.info(f"Advance requested when already started (started at {BritishTime.fromtimestamp(self.advance_on)})")
+        logger.info(
+            f"Advance requested when already started (started at {BritishTime.fromtimestamp(self.advance_on)})"
+        )
 
     async def start_advance(self, mins: int = 30):
         loop = asyncio.get_running_loop()
