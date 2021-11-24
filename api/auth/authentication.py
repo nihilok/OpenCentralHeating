@@ -125,7 +125,7 @@ async def login_for_access_token(
 
 @router.get("/check_token/")
 async def check_token(
-    user: HouseholdMemberPydantic = Depends(get_current_active_user),
+    user: HouseholdMemberPydantic = Depends(get_current_user),
 ):
     access_token = create_access_token(data={"sub": user.name})
     return Token(access_token=access_token, token_type="bearer")

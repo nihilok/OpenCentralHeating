@@ -9,9 +9,11 @@ import requests
 from fastapi.encoders import jsonable_encoder
 
 from .custom_datetimes import BritishTime
+from .fake_pi import fake_pi
 from .models import HeatingConf, Advance
 from .telegram_bot import send_message
 from ..logger import get_logger
+
 
 logger = get_logger(__name__)
 
@@ -22,11 +24,14 @@ class HeatingSystem:
     PROGRAM_LOOP_INTERVAL = 60
 
     def __init__(
-        self, gpio_pin: int, temperature_url: str, raspberry_pi_ip: Optional[str] = None
+        self, gpio_pin: int, temperature_url: str, test: bool = False, raspberry_pi_ip: Optional[str] = None
     ):
         """Create connection with temperature api and load settings
         from config file"""
-        if raspberry_pi_ip is None:
+
+        if test:
+            self.pi = fake_pi()
+        elif raspberry_pi_ip is None:
             self.pi = pigpio.pi()
         else:
             self.pi = pigpio.pi(raspberry_pi_ip)

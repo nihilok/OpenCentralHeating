@@ -6,20 +6,14 @@ from pydantic import ValidationError
 from api.heating.constants import WEATHER_URL, TEMPERATURE_URL, GPIO_PIN
 from .models import Advance, HeatingConf, HeatingInfo, ConfResponse, WeatherReport
 
+from .central_heating import HeatingSystem
 from ..auth.constants import TESTING
 from ..auth.authentication import get_current_active_user
 from ..auth.models import HouseholdMemberPydantic
 from ..cache import get_weather, set_weather
 from ..utils.async_requests import get_json
 
-
-if not TESTING:
-    from .central_heating import HeatingSystem
-else:
-    from .fake_central_heating import HeatingSystem
-
-
-hs = HeatingSystem(GPIO_PIN, TEMPERATURE_URL)
+hs = HeatingSystem(GPIO_PIN, TEMPERATURE_URL, TESTING)
 router = APIRouter()
 
 
