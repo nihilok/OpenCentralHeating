@@ -240,7 +240,7 @@ class HeatingSystem:
                 await asyncio.sleep(60)
         else:
             logger.info(
-                f"Advance requested when already started (started at {BritishTime.fromtimestamp(self.advance_on).isoformat()[:19]})"
+                f"Advance requested when already started (started at {BritishTime.fromtimestamp(self.advance_on).strftime('%Y-%m-%d %H:%M:%S')})"
             )
 
     async def start_advance(self, mins: int = 30):
@@ -248,7 +248,7 @@ class HeatingSystem:
         loop.create_task(self.advance(mins))
         while not self.advance_on:
             await asyncio.sleep(0.1)
-        logger.info(f"Advance started at {BritishTime.fromtimestamp(self.advance_on).isoformat()[:19]}")
+        logger.info(f"Advance started at {BritishTime.fromtimestamp(self.advance_on).strftime('%Y-%m-%d %H:%M:%S')}")
         return self.advance_on
 
     async def cancel_advance(self):
