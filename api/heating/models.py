@@ -49,6 +49,8 @@ class HeatingConf(BaseModel):
         elif on_2:
             if cls.parse_time(on_1) >= cls.parse_time(on_2):
                 raise ValueError("On 1 cannot be after On 2")
+            if cls.parse_time(off_1) > cls.parse_time(on_1):
+                raise ValueError("Off 1 cannot be after On 2")
             if cls.parse_time(on_2) >= cls.parse_time(off_2):
                 raise ValueError("On 2 cannot be after Off 2")
         return values
