@@ -1,6 +1,7 @@
+from datetime import datetime
 from typing import Optional, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator
 
 
 class Advance(BaseModel):
@@ -17,6 +18,30 @@ class HeatingConf(BaseModel):
     target: int = 20
     program_on: bool = True
     advance: Optional[Advance] = None
+
+    @staticmethod
+    def parse_time(time_: Optional[str] = None) -> Optional[datetime.time]:
+        if time_ is not None:
+            return datetime.strptime(time_, "%H:%M").time()
+
+    @root_validator
+    def check_pairs(cls, values):
+        if not values.get('on_1') and values.get('off_1'):
+            raise ValueError('on_1 missing')
+        if values.get('on_1') and not values.get('off_1'):
+            raise ValueError('off_1 missing')
+        if not values.get('on_2') and values.get('off_2'):
+            raise ValueError('on_2 missing')
+        if values.get('on_2') and not values.get('off_2'):
+            raise ValueError('off_2 missing')
+
+    @root_validator
+    def order_of_times(cls, values):
+        if cls.parse_time(values.get('on_1')) >= cls.parse_time(values.get('off_1')):
+            raise ValueError('on_1 cannot be after off_1')
+        elif values.get('on_2'):
+            if cls.parse_time(values.get('on_1')) >= cls.parse_time(values.get('on_2')):
+                raise ValueError('on_1 cannot be after on_2')
 
 
 class SensorReadings(BaseModel):
