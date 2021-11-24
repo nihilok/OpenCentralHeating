@@ -6,7 +6,7 @@ def get_logger(name=__name__):
     logger.setLevel(logging.DEBUG)
 
     fh = logging.FileHandler(filename="heating.log")
-    fh.setLevel(logging.DEBUG)
+    fh.setLevel(logging.INFO)
 
     ch = logging.StreamHandler()
     ch.setLevel(logging.WARNING)

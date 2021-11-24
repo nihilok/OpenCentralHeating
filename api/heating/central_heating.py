@@ -15,7 +15,7 @@ from .models import HeatingConf, Advance
 from .telegram_bot import send_message
 from ..logger import get_logger
 
-logger = get_logger()
+logger = get_logger(__name__)
 
 
 class HeatingSystem:
