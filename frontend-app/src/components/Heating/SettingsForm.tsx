@@ -2,11 +2,12 @@ import * as React from "react";
 import "./heating.css";
 import classNames from "classnames";
 import { Button, Slider, Stack, Switch } from "@mui/material";
+import AcUnitIcon from "@mui/icons-material/AcUnit";
 import { StyledTooltip } from "../Custom/StyledTooltip";
 import { StyledTextField } from "../Custom/StyledTextField";
 import { TEMPERATURE_INTERVAL } from "../../constants/constants";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
-import {checkResponse, checkTimeStringWithinLimit} from "../../lib/helpers";
+import { checkResponse, checkTimeStringWithinLimit } from "../../lib/helpers";
 import { FullScreenLoader } from "../Loaders/FullScreenLoader";
 import { HelpButton } from "../HelpButton/HelpButton";
 import { FullScreenComponent } from "../Custom/FullScreenComponent";
@@ -14,11 +15,9 @@ import { ProgramArrow } from "./ProgramArrow";
 import { WeatherButton } from "../WeatherButton/WeatherButton";
 import { OpenCloseButton } from "./OpenCloseButton";
 import { useSnackbar } from "notistack";
-import AcUnitIcon from "@mui/icons-material/AcUnit";
 import { Barometer } from "../Barometer/Barometer";
 import { TopBar } from "../Custom/TopBar";
 import { CountDown } from "../CountDown";
-import {RecentActors} from "@mui/icons-material";
 
 export function SettingsForm() {
   interface Override {
@@ -99,30 +98,32 @@ export function SettingsForm() {
 
   const parseConf = React.useCallback((conf: HeatingConfig) => {
     const { on_1, off_1, on_2, off_2, program_on, target } = conf;
-      if (!on_2 && !off_2) setRow2(false);
-      else setRow2(true);
-      setConfig({
-        on_1,
-        off_1,
-        on_2,
-        off_2,
-        program_on,
-        target,
-      });
-  }, [])
+    if (!on_2 && !off_2) setRow2(false);
+    else setRow2(true);
+    setConfig({
+      on_1,
+      off_1,
+      on_2,
+      off_2,
+      program_on,
+      target,
+    });
+  }, []);
 
-  const parseData = React.useCallback((data: APIResponse) => {
-    if (data.conf) {
-      parseConf(data.conf)
-    }
-    checkResponse(data.sensor_readings, setReadings);
-    checkResponse(data.advance, setOverride)
-    checkResponse(data.indoor_temperature, setCurrentTemp)
-    checkResponse(data.relay_on, setRelayOn)
-  }, [parseConf]);
+  const parseData = React.useCallback(
+    (data: APIResponse) => {
+      if (data.conf) {
+        parseConf(data.conf);
+      }
+      checkResponse(data.sensor_readings, setReadings);
+      checkResponse(data.advance, setOverride);
+      checkResponse(data.indoor_temperature, setCurrentTemp);
+      checkResponse(data.relay_on, setRelayOn);
+    },
+    [parseConf]
+  );
 
   const getSettings = React.useCallback(async () => {
-    console.debug("Getting settings");
     await fetch("/heating/?conf=true")
       .then((res) =>
         res.json().then((data: APIResponse) => {
@@ -139,10 +140,14 @@ export function SettingsForm() {
 
   const setSettings = React.useCallback(
     async (currentState: HeatingConfig) => {
-      console.debug("Updating settings");
       await fetch("/heating/", "POST", currentState).then((res) =>
-        res.json().then((data) => {
-          if (res.status !== 200) console.error(data);
+        res.json().then(async (data) => {
+          if (res.status === 422) {
+            enqueueSnackbar(data.detail[0].msg, { variant: "error" });
+            await fetch("/heating/?conf=true").then((res) =>
+              res.json().then((data) => parseData(data))
+            );
+          } else if (res.status !== 200) console.error(data);
           else {
             if (data !== currentState) {
               lockRef.current = true;
@@ -152,7 +157,7 @@ export function SettingsForm() {
         })
       );
     },
-    [fetch, parseData]
+    [enqueueSnackbar, fetch, parseData]
   );
 
   const debounce = React.useCallback(
@@ -216,12 +221,11 @@ export function SettingsForm() {
   };
 
   async function programOnOff() {
-    console.debug("Switching on/off");
     await fetch("/heating/on_off/").then((res) =>
       res.json().then((data) => {
         if (res.status !== 200) return console.log(data);
         lockRef.current = true;
-        parseConf(data.conf)
+        parseConf(data.conf);
       })
     );
   }

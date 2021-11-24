@@ -9,7 +9,7 @@ import { LOGIN, LOGOUT } from "../../context/AuthContext";
 import { FullScreenComponent } from "../Custom/FullScreenComponent";
 import { useSnackbar } from "notistack";
 import { useTelegramDebugMessage } from "../../hooks/TelegramBot";
-import {useFetchWithToken} from "../../hooks/FetchWithToken";
+import { useFetchWithToken } from "../../hooks/FetchWithToken";
 
 export default function LoginForm() {
   const { context, dispatch } = useAuthContext();
@@ -32,8 +32,6 @@ export default function LoginForm() {
   const checkToken = React.useCallback(async () => {
     const localToken: string | null = localStorage.getItem("token");
     if (!localToken) return;
-    const token = JSON.parse(localToken);
-    console.log(token)
     fetchWithToken(`/check_token/`)
       .then((response) =>
         response.json().then((data) => {
@@ -55,10 +53,9 @@ export default function LoginForm() {
           errorMessage: error.message || error.statusText,
         }));
       });
-  }, [context, dispatch, enqueueSnackbar]);
+  }, [dispatch, enqueueSnackbar, fetchWithToken]);
 
   React.useEffect(() => {
-    console.debug("Checking token");
     let timeout = setTimeout(() => {}, 1);
     checkToken().then(() => {
       timeout = setTimeout(
@@ -120,7 +117,7 @@ export default function LoginForm() {
           console.log(error)
         );
         enqueueSnackbar(message, { variant: "error" });
-        setState(p=>({...p, errorMessage: null}))
+        setState((p) => ({ ...p, errorMessage: null }));
       }
     },
     [enqueueSnackbar, sendMessage]
