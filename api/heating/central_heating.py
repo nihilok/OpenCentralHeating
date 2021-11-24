@@ -114,17 +114,17 @@ class HeatingSystem:
         time_now = BritishTime.now().time()
         try:
             if (
-                self.parse_time(self.conf.off_1)
+                self.conf.parse_time(self.conf.off_1)
                 > time_now
-                > self.parse_time(self.conf.on_1)
+                > self.conf.parse_time(self.conf.on_1)
             ):
                 return True
             elif not self.conf.on_2:
                 return False
             elif (
-                self.parse_time(self.conf.off_2)
+                self.conf.parse_time(self.conf.off_2)
                 > time_now
-                > self.parse_time(self.conf.on_2)
+                > self.conf.parse_time(self.conf.on_2)
             ):
                 return True
         except ValueError:
@@ -143,10 +143,6 @@ class HeatingSystem:
             return True
         elif target <= current:
             return False
-
-    @staticmethod
-    def parse_time(time_: str) -> datetime.time:
-        return datetime.strptime(time_, "%H:%M").time()
 
     def switch_on_relay(self):
         if not self.relay_state:
