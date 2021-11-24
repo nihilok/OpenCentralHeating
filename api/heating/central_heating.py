@@ -172,7 +172,7 @@ class HeatingSystem:
             logger.debug("warm enough")
             self.switch_off_relay()
 
-    async def async_main_task(self):
+    async def main_task(self):
         """If time is within range, turn on relay if temp is below range,
         turn off if above range."""
         if self.within_program_time:
@@ -181,41 +181,44 @@ class HeatingSystem:
             if not self.advance_on:
                 self.switch_off_relay()
 
-    async def async_backup_task(self):
+    async def backup_task(self):
         """Turns on heating if house is below 5'C to prevent ice damage"""
         temp = float(self.temperature)
         if temp < 5:
             logger.debug("Frost stat warning (below 5`C)")
             self.switch_on_relay()
-        elif temp > 6:
+        elif temp > 6 and self.relay_state:
             logger.debug("Frost stat warning resolved (above 6`C)")
             self.switch_off_relay()
 
-    async def async_main_loop(self, interval: int = 60):
+    async def main_loop(self, interval: int = 60):
         while self.conf.program_on:
-            await self.async_main_task()
+            await self.main_task()
             await asyncio.sleep(interval)
+        await self.main_task()
+        logger.info('Main loop ended (program off)')
 
-    async def async_backup_loop(self, interval: int = 60):
-        while not self.conf.program_on:
-            await self.async_backup_task()
+    async def backup_loop(self, interval: int = 60):
+        while not self.conf.program_on and not self.advance_on:
+            await self.backup_task()
             await asyncio.sleep(interval)
+        logger.info('Backup loop ended (program on)')
 
     def program_on(self):
         self.conf.program_on = True
         loop = asyncio.get_running_loop()
-        loop.create_task(self.async_main_loop(self.PROGRAM_LOOP_INTERVAL))
+        loop.create_task(self.main_loop(self.PROGRAM_LOOP_INTERVAL))
         self.save_state()
 
     def program_off(self):
         self.conf.program_on = False
         loop = asyncio.get_running_loop()
-        loop.create_task(self.async_backup_loop(self.PROGRAM_LOOP_INTERVAL))
+        loop.create_task(self.backup_loop(self.PROGRAM_LOOP_INTERVAL))
         self.save_state()
 
-    async def async_advance(self, mins: int = 30):
+    async def advance(self, mins: int = 30):
         if not self.advance_on:
-            logger.debug("Advance starting")
+            logger.info("Advance starting")
             self.advance_on = time.time()
             self.conf.advance = Advance(on=True, start=self.advance_on)
             self.save_state()
@@ -226,14 +229,14 @@ class HeatingSystem:
                     break
                 await self.thermostat_control()
                 await asyncio.sleep(60)
-        logger.debug("Advance already started")
+        logger.info(f"Advance requested when already started (started at {BritishTime.fromtimestamp(self.advance_on)})")
 
     async def start_advance(self, mins: int = 30):
         loop = asyncio.get_running_loop()
-        loop.create_task(self.async_advance(mins))
+        loop.create_task(self.advance(mins))
         while not self.advance_on:
             await asyncio.sleep(0.1)
-        logger.debug(f"Started at {BritishTime.fromtimestamp(self.advance_on)}")
+        logger.info(f"Advance started at {BritishTime.fromtimestamp(self.advance_on)}")
         return self.advance_on
 
     def cancel_advance(self):
