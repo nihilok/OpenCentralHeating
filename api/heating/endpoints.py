@@ -1,6 +1,7 @@
 from typing import Optional
 
 from fastapi import Depends, APIRouter, HTTPException
+from pydantic import ValidationError
 
 from api.heating.constants import WEATHER_URL, TEMPERATURE_URL, GPIO_PIN
 from .models import Advance, HeatingConf, HeatingInfo, ConfResponse, WeatherReport
@@ -46,8 +47,12 @@ async def update_heating_conf(
     conf: HeatingConf, user: HouseholdMemberPydantic = Depends(get_current_active_user)
 ):
     """Updates the times and target temperature for heating system"""
-    await hs.update_conf(conf)
-    return await heating_conf()
+    try:
+        await hs.update_conf(conf)
+    except ValidationError:
+        raise HTTPException(status_code=400, detail='Unable to update program with given data')
+    finally:
+        return await heating_conf()
 
 
 @router.get("/heating/on_off/", response_model=ConfResponse)
