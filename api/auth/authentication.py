@@ -8,7 +8,6 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 import json
-from ..logger import get_logger
 from .constants import (
     SECRET_KEY,
     ALGORITHM,
@@ -26,7 +25,6 @@ from .models import (
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-logger = get_logger()
 
 credentials_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -77,7 +75,7 @@ def create_access_token(data: dict):
 def decode_jwt(token: str) -> dict:
     try:
         decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        logger.info(json.dumps(decoded_token))
+        logger.debug(f'TOKEN DATA: {json.dumps(decoded_token)}')
         return decoded_token if decoded_token["expires"] >= time.time() else None
     except Exception:
         return {"message": "token expired, please log in again"}
@@ -127,7 +125,6 @@ async def login_for_access_token(
 async def check_token(
     user: HouseholdMemberPydantic = Depends(get_current_active_user),
 ):
-    logger.info(f"user found: {user.id}")
     access_token = create_access_token(data={"sub": user.name})
     return Token(access_token=access_token, token_type="bearer")
 

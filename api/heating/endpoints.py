@@ -49,7 +49,7 @@ async def update_heating_conf(
     if hs.conf != conf:
         hs.conf.__dict__.update(**conf.dict())
         hs.save_state()
-        await hs.async_main_task()
+        await hs.main_task()
     return await heating_conf()
 
 

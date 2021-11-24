@@ -1,8 +1,8 @@
 import logging
 
 
-def get_logger():
-    logger = logging.getLogger("Heating System")
+def get_logger(name=__name__):
+    logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
 
     fh = logging.FileHandler(filename="heating.log")
