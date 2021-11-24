@@ -3,13 +3,18 @@ import subprocess
 import os
 import time
 
+UID = 1000
+
 LOG_DIR = '/var/log/heating'
 try:
     os.makedirs(LOG_DIR, mode=0o777)
 except FileExistsError:
     print('WARNING: Log directory already exists')
+os.chdir(LOG_DIR)
+open('heating.log', 'a').close()
+os.chown('heating.log', 0, UID)
 
-os.setuid(1000)
+os.setuid(UID)
 LOCAL_DIR = os.path.abspath(os.path.dirname(__file__))
 os.chdir(LOCAL_DIR)
 subprocess.run(['python3', '-m', 'venv', 'env'])
