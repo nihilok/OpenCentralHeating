@@ -90,7 +90,7 @@ class HeatingSystem:
             logger.warning("New config created from scratch")
         return conf
 
-    def update_conf(self, new_config: HeatingConf):
+    async def update_conf(self, new_config: HeatingConf):
         if self.conf != new_config:
             self.conf.__dict__.update(**new_config.dict())
             self.save_state()
