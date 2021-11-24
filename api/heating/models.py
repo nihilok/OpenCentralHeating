@@ -27,13 +27,13 @@ class HeatingConf(BaseModel):
     @root_validator
     def check_pairs(cls, values):
         if not values.get('on_1') and values.get('off_1'):
-            raise ValueError('on_1 missing')
+            raise ValueError('On 1 missing')
         if values.get('on_1') and not values.get('off_1'):
-            raise ValueError('off_1 missing')
+            raise ValueError('Off 1 missing')
         if not values.get('on_2') and values.get('off_2'):
-            raise ValueError('on_2 missing')
+            raise ValueError('On 2 missing')
         if values.get('on_2') and not values.get('off_2'):
-            raise ValueError('off_2 missing')
+            raise ValueError('Off 2 missing')
         return values
 
     @root_validator
@@ -45,12 +45,12 @@ class HeatingConf(BaseModel):
             values.get("off_2"),
         )
         if cls.parse_time(on_1) >= cls.parse_time(off_1):
-            raise ValueError("on_1 cannot be after off_1")
+            raise ValueError("On 1 cannot be after Off 1")
         elif on_2:
             if cls.parse_time(on_1) >= cls.parse_time(on_2):
-                raise ValueError("on_1 cannot be after on_2")
+                raise ValueError("On 1 cannot be after On 2")
             if cls.parse_time(on_2) >= cls.parse_time(off_2):
-                raise ValueError("on_2 cannot be after off_2")
+                raise ValueError("On 2 cannot be after Off 2")
         return values
 
 
