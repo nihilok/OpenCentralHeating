@@ -1,9 +1,7 @@
 import signal
-import sys
 import subprocess
 import os
 import time
-from threading import Thread
 
 LOG_DIR = '/var/log/heating'
 try:
@@ -21,7 +19,7 @@ subprocess.run([f'{LOCAL_DIR}/env/bin/pip', 'install', '-r', 'requirements.txt']
 # def start_server():
 proc = subprocess.Popen([f'{LOCAL_DIR}/env/bin/python3', 'main.py'])
 time.sleep(10)
-subprocess.run(['curl', 'http://localhost:8080'])
+subprocess.run(['wget', 'http://localhost:8080/docs'])
 proc.send_signal(signal.SIGINT)
 time.sleep(5)
 proc.send_signal(signal.SIGINT)
