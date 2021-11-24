@@ -6,7 +6,7 @@ def get_logger(name=__name__):
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
 
-    fh = handlers.RotatingFileHandler('heating2.log', maxBytes=500, backupCount=2)
+    fh = handlers.RotatingFileHandler('heating.log', maxBytes=500, backupCount=2)
     fh.setLevel(logging.INFO)
 
     ch = logging.StreamHandler()
