@@ -1,11 +1,12 @@
 import logging
+import logging.handlers as handlers
 
 
 def get_logger(name=__name__):
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
 
-    fh = logging.FileHandler(filename="heating.log")
+    fh = handlers.RotatingFileHandler('heating.log', maxBytes=500, backupCount=2)
     fh.setLevel(logging.INFO)
 
     ch = logging.StreamHandler()
