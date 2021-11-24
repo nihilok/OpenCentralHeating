@@ -12,7 +12,7 @@ except FileExistsError:
     print('WARNING: Log directory already exists')
 os.chdir(LOG_DIR)
 open('heating.log', 'a').close()
-os.chown('heating.log', 0, UID)
+os.chown('heating.log', UID, UID)
 
 os.setuid(UID)
 LOCAL_DIR = os.path.abspath(os.path.dirname(__file__))
