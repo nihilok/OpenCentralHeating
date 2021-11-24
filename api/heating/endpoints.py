@@ -80,7 +80,7 @@ async def cancel_advance(
     user: HouseholdMemberPydantic = Depends(get_current_active_user),
 ):
     """Cancels advance task"""
-    hs.cancel_advance()
+    await hs.cancel_advance()
     return Advance(on=False, relay=hs.relay_state)
 
 
