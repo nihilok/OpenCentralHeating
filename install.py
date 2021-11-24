@@ -29,6 +29,11 @@ proc.send_signal(signal.SIGINT)
 print('=====================================================')
 print('Please create a superuser...', end='\n\n')
 subprocess.run([f'{LOCAL_DIR}/env/bin/python', 'create_superuser.py'])
+with open('run.sh', 'w') as f:
+    f.write('''#!/usr/bin/env bash
+
+source env/bin/activate
+python main.py''')
 os.chmod('run.sh', 0o755)
 os.setuid(0)
 subprocess.run(['ln', 'run.sh', '/usr/local/bin/open-heating'])
