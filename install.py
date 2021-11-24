@@ -76,7 +76,7 @@ with subprocess.Popen(
             process.send_signal(signal.SIGINT)
     conn = sqlite3.connect("db.sqlite3")
     c = conn.cursor()
-    if not c.execute("SELECT * FROM householdmember where id=1"):
+    if not len(list((c.execute("SELECT * FROM householdmember where id=1")))):
         print("=====================================================")
         print("Please create a superuser...", end="\n\n")
         subprocess.run([f"{LOCAL_DIR}/env/bin/python", "create_superuser.py"])
