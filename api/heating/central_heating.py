@@ -175,6 +175,8 @@ class HeatingSystem:
         """If time is within range, turn on relay if temp is below range,
         turn off if above range."""
         if self.within_program_time:
+            if self.advance_on:
+                await self.cancel_advance()
             await self.thermostat_control()
         else:
             if not self.advance_on:
