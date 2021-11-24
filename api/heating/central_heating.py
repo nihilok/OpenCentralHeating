@@ -199,6 +199,7 @@ class HeatingSystem:
             self.switch_off_relay()
 
     async def main_loop(self, interval: int = 60):
+        logger.info("Main loop starting")
         while self.conf.program_on:
             await self.main_task()
             await asyncio.sleep(interval)
@@ -206,10 +207,11 @@ class HeatingSystem:
         logger.info("Main loop ended (program off)")
 
     async def backup_loop(self, interval: int = 300):
+        logger.info("Backup loop starting")
         while not self.conf.program_on and not self.advance_on:
             await self.backup_task()
             await asyncio.sleep(interval)
-        logger.info("Backup loop ended (program on)")
+        logger.info("Backup loop ended")
 
     def program_on(self):
         self.conf.program_on = True
@@ -236,9 +238,10 @@ class HeatingSystem:
                     break
                 await self.thermostat_control()
                 await asyncio.sleep(60)
-        logger.info(
-            f"Advance requested when already started (started at {BritishTime.fromtimestamp(self.advance_on)})"
-        )
+        else:
+            logger.info(
+                f"Advance requested when already started (started at {BritishTime.fromtimestamp(self.advance_on)})"
+            )
 
     async def start_advance(self, mins: int = 30):
         loop = asyncio.get_running_loop()
@@ -253,5 +256,5 @@ class HeatingSystem:
         self.advance_on = None
         self.conf.advance = Advance(on=False)
         await self.main_task()
-        logger.debug("Advance cancelled")
+        logger.info("Advance cancelled")
         self.save_state()
