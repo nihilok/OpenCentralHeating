@@ -51,7 +51,7 @@ async def update_heating_conf(
         await hs.update_conf(conf)
         return await heating_conf()
     except ValidationError:
-        raise HTTPException(status_code=400, detail='Unable to update program with given data')
+        raise HTTPException(status_code=422, detail='Unable to update program with given data')
 
 
 @router.get("/heating/on_off/", response_model=ConfResponse)
