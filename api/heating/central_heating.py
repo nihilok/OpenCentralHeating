@@ -243,5 +243,6 @@ class HeatingSystem:
         self.thread = None
         self.advance_on = None
         self.conf.advance = Advance(on=False)
+        await self.main_task()
         logger.debug("Advance cancelled")
         self.save_state()
