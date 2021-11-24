@@ -12,6 +12,7 @@ except FileExistsError:
     print('WARNING: Log directory already exists')
 os.chdir(LOG_DIR)
 open('heating.log', 'a').close()
+os.chown(LOG_DIR, 0, UID)
 os.chown('heating.log', UID, UID)
 
 os.setuid(UID)
@@ -28,3 +29,4 @@ subprocess.run(['wget', 'http://localhost:8080/docs'])
 proc.send_signal(signal.SIGINT)
 time.sleep(5)
 proc.send_signal(signal.SIGINT)
+subprocess.run([f'{LOCAL_DIR}/env/bin/python', 'create_superuser.py'])
