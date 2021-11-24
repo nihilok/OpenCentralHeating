@@ -9,3 +9,4 @@ tortoise-orm
 python-multipart
 python-jose
 bcrypt
+uvicorn
