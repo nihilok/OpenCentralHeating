@@ -65,7 +65,7 @@ class HeatingSystem:
                 logger.error(log_msg)
                 send_message(log_msg)
                 self.error[1] = True
-                logger.warning('Using default measurements')
+                logger.warning("Using default measurements")
             return {"temperature": 20, "pressure": 0, "humidity": 0}
 
     def get_or_create_config(self):
@@ -73,7 +73,7 @@ class HeatingSystem:
             with open(self.config_file, "r") as f:
                 file_dict = json.load(f)
                 conf = HeatingConf(**file_dict)
-            logger.info('Config loaded from file')
+            logger.info("Config loaded from file")
         except Exception as e:
             logger.error(str(e))
             conf = HeatingConf(
@@ -87,7 +87,7 @@ class HeatingSystem:
             )
             with open(self.config_file, "w") as f:
                 json.dump(jsonable_encoder(conf), f)
-            logger.warning('New config created from scratch')
+            logger.warning("New config created from scratch")
         return conf
 
     @property
@@ -226,29 +226,29 @@ class HeatingSystem:
         self.save_state()
 
     async def advance(self, mins: int = 30):
-        if not self.advance_on:
-            logger.info("Advance starting")
-            self.advance_on = time.time()
-            self.conf.advance = Advance(on=True, start=self.advance_on)
-            self.save_state()
-            check = self.advance_on
-            while check > time.time() - (mins * 60):
-                if self.within_program_time or not self.advance_on:
-                    await self.cancel_advance()
-                    break
-                await self.thermostat_control()
-                await asyncio.sleep(60)
-        else:
-            logger.info(
-                f"Advance requested when already started (started at {BritishTime.fromtimestamp(self.advance_on).strftime('%Y-%m-%d %H:%M:%S')})"
-            )
+        self.advance_on = time.time()
+        self.conf.advance = Advance(on=True, start=self.advance_on)
+        self.save_state()
+        check = self.advance_on
+        while check > time.time() - (mins * 60):
+            if self.within_program_time or not self.advance_on:
+                await self.cancel_advance()
+                break
+            await self.thermostat_control()
+            await asyncio.sleep(60)
 
     async def start_advance(self, mins: int = 30):
+        if self.advance_on:
+            logger.info(
+                f"Advance requested when already started "
+                f"(started at {BritishTime.fromtimestamp(self.advance_on).strftime('%Y-%m-%d %H:%M:%S')})"
+            )
+            return self.advance_on
         loop = asyncio.get_running_loop()
         loop.create_task(self.advance(mins))
         while not self.advance_on:
             await asyncio.sleep(0.1)
-        logger.info(f"Advance started at {BritishTime.fromtimestamp(self.advance_on).strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info("Advance started")
         return self.advance_on
 
     async def cancel_advance(self):
