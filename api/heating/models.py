@@ -24,7 +24,7 @@ class HeatingConf(BaseModel):
         if time_ is not None:
             return datetime.strptime(time_, "%H:%M").time()
 
-    @root_validator
+    @root_validator(pre=True)
     def check_pairs(cls, values):
         if not values.get('on_1') and values.get('off_1'):
             raise ValueError('on_1 missing')
@@ -35,7 +35,7 @@ class HeatingConf(BaseModel):
         if values.get('on_2') and not values.get('off_2'):
             raise ValueError('off_2 missing')
 
-    @root_validator
+    @root_validator(pre=True)
     def order_of_times(cls, values):
         if cls.parse_time(values.get('on_1')) >= cls.parse_time(values.get('off_1')):
             raise ValueError('on_1 cannot be after off_1')
