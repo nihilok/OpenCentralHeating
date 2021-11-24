@@ -2,8 +2,12 @@ import signal
 import subprocess
 import os
 import time
+import sys
 
-UID = 1000
+try:
+    UID = int(sys.argv[-1])
+except Exception:
+    UID = 1000
 
 LOG_DIR = '/var/log/heating'
 try:
