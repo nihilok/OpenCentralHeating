@@ -15,6 +15,15 @@ open('heating.log', 'a').close()
 os.chown(LOG_DIR, 0, UID)
 os.chown('heating.log', UID, UID)
 
+with open('run.sh', 'w') as f:
+    f.write('''#!/usr/bin/env bash
+
+source env/bin/activate
+python main.py''')
+os.chmod('run.sh', 0o755)
+os.chown('run.sh', UID, UID)
+subprocess.run(['ln', 'run.sh', '/usr/local/bin/open-heating'])
+
 os.setuid(UID)
 LOCAL_DIR = os.path.abspath(os.path.dirname(__file__))
 os.chdir(LOCAL_DIR)
@@ -29,11 +38,3 @@ proc.send_signal(signal.SIGINT)
 print('=====================================================')
 print('Please create a superuser...', end='\n\n')
 subprocess.run([f'{LOCAL_DIR}/env/bin/python', 'create_superuser.py'])
-with open('run.sh', 'w') as f:
-    f.write('''#!/usr/bin/env bash
-
-source env/bin/activate
-python main.py''')
-os.chmod('run.sh', 0o755)
-os.setuid(0)
-subprocess.run(['ln', 'run.sh', '/usr/local/bin/open-heating'])
