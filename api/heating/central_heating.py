@@ -212,7 +212,7 @@ class HeatingSystem:
 
     def program_off(self):
         self.conf.program_on = False
-        await self.main_task()
+        asyncio.run(self.main_task())
         loop = asyncio.get_running_loop()
         loop.create_task(self.backup_loop())
         self.save_state()
