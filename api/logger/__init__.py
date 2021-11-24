@@ -13,7 +13,7 @@ def get_logger(name=__name__):
     ch.setLevel(logging.WARNING)
 
     formatter = logging.Formatter(
-        "[%(asctime)s] [%(levelname)s] [%(asctime)s] %(message)s (%(name)s)"
+        "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
     )
 
     ch.setFormatter(formatter)
