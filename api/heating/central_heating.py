@@ -68,7 +68,7 @@ class HeatingSystem:
                 logger.warning("Using default measurements")
             return {"temperature": 20, "pressure": 0, "humidity": 0}
 
-    def get_or_create_config(self):
+    def get_or_create_config(self) -> HeatingConf:
         try:
             with open(self.config_file, "r") as f:
                 file_dict = json.load(f)
@@ -89,6 +89,14 @@ class HeatingSystem:
                 json.dump(jsonable_encoder(conf), f)
             logger.warning("New config created from scratch")
         return conf
+
+    def update_conf(self, new_config: HeatingConf):
+        if self.conf != new_config:
+            self.conf.__dict__.update(**new_config.dict())
+            self.save_state()
+            await self.main_task()
+            logger.info(f"Heating configuration updated: new config: {json.dumps(jsonable_encoder(new_config))}")
+        logger.info('Heating configuration not updated (equal configuration supplied)')
 
     @property
     def temperature(self) -> float:
@@ -138,23 +146,6 @@ class HeatingSystem:
     @staticmethod
     def parse_time(time_: str) -> datetime.time:
         return datetime.strptime(time_, "%H:%M").time()
-
-    def change_times(self, on1, off1, on2=None, off2=None):
-        """Accept times in format HH:MM or None for set 2"""
-        self.conf.on_1 = on1
-        self.conf.off_1 = off1
-        self.conf.on_2 = on2
-        self.conf.off_2 = off2
-        self.save_state()
-        logger.info(
-            f"Program changed: new time{'s' if on2 else ''} "
-            f"{on1}->{off1}{f', {on2}->{off2}' if on2 else ''}"
-        )
-
-    def change_temp(self, temp: int):
-        self.conf.target = temp
-        self.save_state()
-        logger.info(f"Target temperature changed: new temp: {temp}'C")
 
     def switch_on_relay(self):
         if not self.relay_state:
@@ -252,9 +243,9 @@ class HeatingSystem:
         return self.advance_on
 
     async def cancel_advance(self):
-        self.thread = None
-        self.advance_on = None
+        if self.advance_on:
+            self.advance_on = None
+            logger.info("Advance cancelled")
         self.conf.advance = Advance(on=False)
         await self.main_task()
-        logger.info("Advance cancelled")
         self.save_state()

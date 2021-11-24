@@ -46,10 +46,7 @@ async def update_heating_conf(
     conf: HeatingConf, user: HouseholdMemberPydantic = Depends(get_current_active_user)
 ):
     """Updates the times and target temperature for heating system"""
-    if hs.conf != conf:
-        hs.conf.__dict__.update(**conf.dict())
-        hs.save_state()
-        await hs.main_task()
+    hs.update_conf(conf)
     return await heating_conf()
 
 
