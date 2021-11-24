@@ -24,7 +24,7 @@ class HeatingConf(BaseModel):
         if time_ is not None:
             return datetime.strptime(time_, "%H:%M").time()
 
-    @root_validator(pre=True)
+    @root_validator
     def check_pairs(cls, values):
         if not values.get('on_1') and values.get('off_1'):
             raise ValueError('on_1 missing')
@@ -34,14 +34,24 @@ class HeatingConf(BaseModel):
             raise ValueError('on_2 missing')
         if values.get('on_2') and not values.get('off_2'):
             raise ValueError('off_2 missing')
+        return values
 
-    @root_validator(pre=True)
+    @root_validator
     def order_of_times(cls, values):
-        if cls.parse_time(values.get('on_1')) >= cls.parse_time(values.get('off_1')):
-            raise ValueError('on_1 cannot be after off_1')
-        elif values.get('on_2'):
-            if cls.parse_time(values.get('on_1')) >= cls.parse_time(values.get('on_2')):
-                raise ValueError('on_1 cannot be after on_2')
+        on_1, off_1, on_2, off_2 = (
+            values.get("on_1"),
+            values.get("off_1"),
+            values.get("on_2"),
+            values.get("off_2"),
+        )
+        if cls.parse_time(on_1) >= cls.parse_time(off_1):
+            raise ValueError("on_1 cannot be after off_1")
+        elif on_2:
+            if cls.parse_time(on_1) >= cls.parse_time(on_2):
+                raise ValueError("on_1 cannot be after on_2")
+            if cls.parse_time(on_2) >= cls.parse_time(off_2):
+                raise ValueError("on_2 cannot be after off_2")
+        return values
 
 
 class SensorReadings(BaseModel):
