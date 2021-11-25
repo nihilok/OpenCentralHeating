@@ -29,7 +29,7 @@ You should now start the server from any directory with the command `open-heatin
 
 If you want to run the server continuously and serve over a network or the internet, I suggest using Nginx (`sudo apt install nginx`) and creating a server block that acts a proxy to http://localhost:8080, and then using Supervisor (`sudo apt install supervisor`) to run the API in the background (on the same port).
 
-To build the front-end application, cd into the frontend-app directory and install the package with npm or yarn (`yarn install`). Now run 'yarn build` (or `npm run build`) to create the production build. You can now serve the build directory that has been created as you wish, for example using Nginx as above.
+To build the front-end application, cd into the frontend-app directory and install the package with npm or yarn (`yarn install`). Now run `yarn build` (or `npm run build`) to create the production build. You can now serve the build directory that has been created as you wish, for example using Nginx as above.
 
 Your nginx config might look like this:
 ```
