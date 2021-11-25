@@ -1,27 +1,33 @@
+import grp
 import signal
 import subprocess
 import os
 import sys
 import sqlite3
+from pwd import getpwnam
 
 try:
-    UID = int(sys.argv[-1])
-except Exception:
+    user = os.getenv('USER')
+    UID = int(getpwnam(user).pw_uid)
+    print(f'Using UID {UID} ({user}) for permissions')
+except ValueError:
     print("Using default UID (1000) for permissions")
     UID = 1000
 
 LOG_DIR = "/var/log/heating"
 try:
-    os.makedirs(LOG_DIR, mode=0o665)
+    os.makedirs(LOG_DIR, mode=0o664)
 except FileExistsError:
     print("WARNING: Log directory already exists")
 
 if not os.path.exists(LOG_DIR + "/heating.log"):
     try:
-        os.chown(LOG_DIR, 0, UID)
+        GID = grp.getgrnam('adm')[2]
+        os.chown(LOG_DIR, UID, GID)
         os.chdir(LOG_DIR)
         open("heating.log", "a").close()
-        os.chown("heating.log", UID, UID)
+        os.chown("heating.log", UID, GID)
+        os.chmod("heating.log", 0o664)
     except PermissionError:
         print(
             "PermissionError: you need to run the install script with sudo\n\n   $ sudo python3 install.py"
