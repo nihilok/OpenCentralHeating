@@ -31,7 +31,6 @@ if not os.path.exists(LOG_DIR + "/heating.log"):
 with open("run.sh", "w") as f:
     f.write(
         """#!/usr/bin/env bash
-
 source env/bin/activate
 python main.py"""
     )
@@ -51,7 +50,7 @@ if not os.path.exists('env'):
         stderr=subprocess.STDOUT,
         universal_newlines=True,
     ) as process:
-        print("Installing requirements")
+        print("Installing requirements...")
         for line in process.stdout:
             pass
         print("Done")
