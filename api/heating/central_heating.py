@@ -247,7 +247,7 @@ class HeatingSystem:
         loop.create_task(self.advance(mins))
         while not self.advance_on and not self.advance_end:
             await asyncio.sleep(0.1)
-        logger.info(f"Advance started (scheduled until {BritishTime.fromtimestamp(self.advance_end).strftime('%H:%M:$S')})")
+        logger.info(f"Advance started (scheduled until {BritishTime.fromtimestamp(self.advance_end).strftime('%H:%M:%S')})")
         return self.advance_on
 
     async def cancel_advance(self):
