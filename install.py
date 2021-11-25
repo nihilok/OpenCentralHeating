@@ -52,7 +52,7 @@ os.setuid(UID)
 
 if not os.path.exists(f"{LOCAL_DIR}/env"):
     print("creating Python virtual environment...")
-    subprocess.run(["python3", "-m", "venv", f"{LOCAL_DIR}/env"])
+    subprocess.run(["python3", "-m", "venv", "env"])
     with subprocess.Popen(
         [f"{LOCAL_DIR}/env/bin/pip", "install", "-r", "requirements.txt"],
         stdout=subprocess.PIPE,
@@ -61,8 +61,8 @@ if not os.path.exists(f"{LOCAL_DIR}/env"):
     ) as process:
         print("Installing requirements...")
         for line in process.stdout:
-            pass
-        print("Done")
+            print(line)
+        print("****Done****")
 else:
     print('WARNING: Virtual environment already exists')
 if not os.path.exists('db.sqlite3'):
