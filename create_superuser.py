@@ -12,8 +12,10 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 config = configparser.ConfigParser()
 path = Path(__file__)
-config_path = os.path.join(path, "api/secrets/secrets.ini")
+ROOT_DIR = path.parent.absolute()
+config_path = os.path.join(ROOT_DIR, "api/secrets/secrets.ini")
 config.read(config_path)
+
 
 def get_password_hash(password):
     return pwd_context.hash(password)
