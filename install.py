@@ -116,9 +116,9 @@ def setup_heating():
         "(192.168.1.11 | leave blank if current machine is same raspberry pi)\n$:"
     )
     if temperature_url:
-        config['HEATING']['TEMPERATURE_URL'] = temperature_url
+        config['HEATING']['temperature_url'] = temperature_url
     if raspberry_pi_ip:
-        config['HEATING']['RASPBERRY_PI_IP'] = raspberry_pi_ip
+        config['HEATING']['raspberry_pi_ip'] = raspberry_pi_ip
     if raspberry_pi_ip or temperature_url:
         with open(config_path, 'w') as f:
             config.write(f)
