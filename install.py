@@ -19,23 +19,18 @@ except (ValueError, TypeError):
 
 try:
     os.makedirs(LOG_DIR, mode=0o764)
-except FileExistsError:
-    print("WARNING: Log directory already exists")
-
-if not os.path.exists(LOG_DIR + "/heating.log"):
-    print(f'Creating log file in {LOG_DIR}')
+    print(f'Log directory created ({LOG_DIR})')
     try:
         GID = grp.getgrnam('adm')[2]
         os.chown(LOG_DIR, UID, GID)
         os.chdir(LOG_DIR)
-        open("heating.log", "a").close()
-        os.chown("heating.log", UID, GID)
-        os.chmod("heating.log", 0o764)
     except PermissionError:
         print(
             "PermissionError: you need to run the install script with sudo\n\n   $ sudo python3 install.py"
         )
         sys.exit()
+except FileExistsError:
+    print("WARNING: Log directory already exists")
 
 os.chdir(LOCAL_DIR)
 with open("run.sh", "w") as f:
