@@ -13,7 +13,7 @@ try:
     user = os.getenv('SUDO_USER')
     UID = int(getpwnam(user).pw_uid)
     print(f'Using UID {UID} ({user}) for permissions')
-except ValueError:
+except (ValueError, TypeError):
     print("Using default UID (1000) for permissions")
     UID = 1000
 
