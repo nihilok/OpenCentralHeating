@@ -33,11 +33,13 @@ def check_for_first_household():
 def create_superuser(household: int = 1):
     check_for_first_household()
     name = input("name: ")
-    password = get_password_hash(getpass("password: "))
-    confirm_password = get_password_hash(getpass("confirm_password: "))
+    password = getpass("password: ")
+    confirm_password = getpass("confirm_password: ")
     if password != confirm_password:
         print('**PASSWORDS DO NOT MATCH, please try again**')
         return create_superuser()
+    password = get_password_hash(password)
+    del confirm_password
     conn = sqlite3.connect("db.sqlite3")
     curs = conn.cursor()
     vals = f'("{name}", "{password}", {household})'
