@@ -6,6 +6,9 @@ import sys
 import sqlite3
 from pwd import getpwnam
 
+LOG_DIR = "/var/log/heating"
+LOCAL_DIR = os.path.abspath(os.path.dirname(__file__))
+
 try:
     user = os.getenv('SUDO_USER')
     UID = int(getpwnam(user).pw_uid)
@@ -14,29 +17,26 @@ except ValueError:
     print("Using default UID (1000) for permissions")
     UID = 1000
 
-LOG_DIR = "/var/log/heating"
 try:
-    os.makedirs(LOG_DIR, mode=0o664)
+    os.makedirs(LOG_DIR, mode=0o764)
 except FileExistsError:
     print("WARNING: Log directory already exists")
 
 if not os.path.exists(LOG_DIR + "/heating.log"):
+    print(f'Creating log file in {LOG_DIR}')
     try:
         GID = grp.getgrnam('adm')[2]
         os.chown(LOG_DIR, UID, GID)
         os.chdir(LOG_DIR)
         open("heating.log", "a").close()
         os.chown("heating.log", UID, GID)
-        os.chmod("heating.log", 0o664)
+        os.chmod("heating.log", 0o764)
     except PermissionError:
         print(
             "PermissionError: you need to run the install script with sudo\n\n   $ sudo python3 install.py"
         )
         sys.exit()
-else:
-    os.chdir(LOG_DIR)
 
-LOCAL_DIR = os.path.abspath(os.path.dirname(__file__))
 os.chdir(LOCAL_DIR)
 with open("run.sh", "w") as f:
     f.write(
@@ -53,18 +53,12 @@ os.setuid(UID)
 if not os.path.exists(f"{LOCAL_DIR}/env"):
     print("creating Python virtual environment...")
     subprocess.run(["python3", "-m", "venv", "env"])
-    with subprocess.Popen(
-        [f"{LOCAL_DIR}/env/bin/pip", "install", "-r", "requirements.txt"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        universal_newlines=True,
-    ) as process:
-        print("Installing requirements...")
-        for line in process.stdout:
-            print(line)
-        print("****Done****")
+    print("Installing requirements...")
+    subprocess.run([f"{LOCAL_DIR}/env/bin/pip", "install", "-r", "requirements.txt"])
+    print("\n****Done****\n")
 else:
     print('WARNING: Virtual environment already exists')
+
 if not os.path.exists('db.sqlite3'):
     with subprocess.Popen(
         [f"{LOCAL_DIR}/env/bin/python3", "main.py"],
