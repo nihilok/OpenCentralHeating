@@ -28,6 +28,8 @@ if not os.path.exists(LOG_DIR + "/heating.log"):
         )
         sys.exit()
 
+LOCAL_DIR = os.path.abspath(os.path.dirname(__file__))
+os.chdir(LOCAL_DIR)
 with open("run.sh", "w") as f:
     f.write(
         """#!/usr/bin/env bash
@@ -39,8 +41,7 @@ os.chown("run.sh", UID, UID)
 subprocess.run(["ln", "run.sh", "/usr/local/bin/open-heating"])
 
 os.setuid(UID)
-LOCAL_DIR = os.path.abspath(os.path.dirname(__file__))
-os.chdir(LOCAL_DIR)
+
 if not os.path.exists('env'):
     print("creating Python virtual environment...")
     subprocess.run(["python3", "-m", "venv", "env"])
