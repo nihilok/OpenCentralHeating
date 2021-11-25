@@ -5,7 +5,6 @@ from pathlib import Path
 
 config = configparser.ConfigParser()
 path = Path(os.getcwd())
-print(path)
 config_path = os.path.join(path, "api/secrets/secrets.ini")
 config.read(config_path)
 superusers = json.loads(config['SUPERUSERS'].get('superuser_list', '[]'))

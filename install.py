@@ -1,27 +1,36 @@
+import configparser
 import grp
 import signal
 import subprocess
 import os
 import sys
 import sqlite3
+from pathlib import Path
 from pwd import getpwnam
+
+config = configparser.ConfigParser()
+path = Path(__file__)
+ROOT_DIR = path.parent.absolute()
+print(ROOT_DIR)
+config_path = os.path.join(ROOT_DIR, "api/secrets/secrets.ini")
+config.read(config_path)
 
 LOG_DIR = "/var/log/heating"
 LOCAL_DIR = os.path.abspath(os.path.dirname(__file__))
 
 try:
-    user = os.getenv('SUDO_USER')
+    user = os.getenv("SUDO_USER")
     UID = int(getpwnam(user).pw_uid)
-    print(f'Using UID {UID} ({user}) for permissions')
+    print(f"Using UID {UID} ({user}) for permissions")
 except (ValueError, TypeError):
     print("Using default UID (1000) for permissions")
     UID = 1000
 
 try:
     os.makedirs(LOG_DIR, mode=0o764)
-    print(f'Log directory created ({LOG_DIR})')
+    print(f"Log directory created ({LOG_DIR})")
     try:
-        GID = grp.getgrnam('adm')[2]
+        GID = grp.getgrnam("adm")[2]
         os.chown(LOG_DIR, UID, GID)
         os.chdir(LOG_DIR)
     except PermissionError:
@@ -52,9 +61,9 @@ if not os.path.exists(f"{LOCAL_DIR}/env"):
     subprocess.run([f"{LOCAL_DIR}/env/bin/pip", "install", "-r", "requirements.txt"])
     print("\n****Done****\n")
 else:
-    print('WARNING: Virtual environment already exists')
+    print("WARNING: Virtual environment already exists")
 
-if not os.path.exists('db.sqlite3'):
+if not os.path.exists("db.sqlite3"):
     with subprocess.Popen(
         [f"{LOCAL_DIR}/env/bin/python3", "main.py"],
         stdout=subprocess.PIPE,
@@ -83,7 +92,7 @@ if not os.path.exists('db.sqlite3'):
                 )
                 process.send_signal(signal.SIGINT)
 else:
-    print('WARNING: db.sqlite3 already exists')
+    print("WARNING: db.sqlite3 already exists")
 
 conn = sqlite3.connect("db.sqlite3")
 c = conn.cursor()
@@ -92,5 +101,26 @@ if not len(list((c.execute("SELECT * FROM householdmember where id=1")))):
     print("Please create a superuser...", end="\n\n")
     subprocess.run([f"{LOCAL_DIR}/env/bin/python", "create_superuser.py"])
 else:
-    print('Superuser already exists')
+    print("Superuser already exists")
 conn.close()
+
+
+def setup_heating():
+    if input("Do you want to set up the heating system? [Y/n]").lower() in {"no", "n"}:
+        return
+    temperature_url = input(
+        "What's the URL of the temperature sensor (https://example.com/temp | http://192.168.1.10:8000)?\n$:"
+    )
+    raspberry_pi_ip = input(
+        "What's the IP of the Raspberry Pi controlling the relay?\n"
+        "(192.168.1.11 | leave blank if current machine is same raspberry pi)\n$:"
+    )
+    if temperature_url:
+        config['HEATING']['TEMPERATURE_URL'] = temperature_url
+    if raspberry_pi_ip:
+        config['HEATING']['RASPBERRY_PI_IP'] = raspberry_pi_ip
+    if raspberry_pi_ip or temperature_url:
+        with open(config_path, 'w') as f:
+            config.write(f)
+
+setup_heating()

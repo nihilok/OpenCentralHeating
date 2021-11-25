@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import Depends, APIRouter, HTTPException
 from pydantic import ValidationError
 
-from api.heating.constants import WEATHER_URL, TEMPERATURE_URL, GPIO_PIN
+from api.heating.constants import WEATHER_URL, TEMPERATURE_URL, GPIO_PIN, RASPBERRY_PI_IP
 from .models import Advance, HeatingConf, HeatingInfo, ConfResponse, WeatherReport
 
 from .central_heating import HeatingSystem
@@ -13,7 +13,8 @@ from ..auth.models import HouseholdMemberPydantic
 from ..cache import get_weather, set_weather
 from ..utils.async_requests import get_json
 
-hs = HeatingSystem(GPIO_PIN, TEMPERATURE_URL, TESTING)
+
+hs = HeatingSystem(GPIO_PIN, TEMPERATURE_URL, TESTING, RASPBERRY_PI_IP)
 router = APIRouter()
 
 
