@@ -7,7 +7,7 @@ import sqlite3
 from pwd import getpwnam
 
 try:
-    user = os.getenv('USER')
+    user = os.getenv('SUDO_USER')
     UID = int(getpwnam(user).pw_uid)
     print(f'Using UID {UID} ({user}) for permissions')
 except ValueError:
@@ -33,6 +33,8 @@ if not os.path.exists(LOG_DIR + "/heating.log"):
             "PermissionError: you need to run the install script with sudo\n\n   $ sudo python3 install.py"
         )
         sys.exit()
+else:
+    os.chdir(LOG_DIR)
 
 LOCAL_DIR = os.path.abspath(os.path.dirname(__file__))
 os.chdir(LOCAL_DIR)
@@ -48,9 +50,9 @@ subprocess.run(["ln", "run.sh", "/usr/local/bin/open-heating"])
 
 os.setuid(UID)
 
-if not os.path.exists('env'):
+if not os.path.exists(f"{LOCAL_DIR}/env"):
     print("creating Python virtual environment...")
-    subprocess.run(["python3", "-m", "venv", "env"])
+    subprocess.run(["python3", "-m", "venv", f"{LOCAL_DIR}/env"])
     with subprocess.Popen(
         [f"{LOCAL_DIR}/env/bin/pip", "install", "-r", "requirements.txt"],
         stdout=subprocess.PIPE,
