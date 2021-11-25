@@ -7,7 +7,7 @@ from api.heating.constants import WEATHER_URL, TEMPERATURE_URL, GPIO_PIN, RASPBE
 from .models import Advance, HeatingConf, HeatingInfo, ConfResponse, WeatherReport
 
 from .central_heating import HeatingSystem
-from ..auth.constants import TESTING
+from .constants import TESTING
 from ..auth.authentication import get_current_active_user
 from ..auth.models import HouseholdMemberPydantic
 from ..cache import get_weather, set_weather
