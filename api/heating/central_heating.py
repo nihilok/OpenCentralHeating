@@ -28,7 +28,7 @@ class HeatingSystem:
     ):
         """Create connection with temperature api and load settings
         from config file"""
-        logger.info(f'Creating new instance of HeatingSystem (GPIO {gpio_pin}, TEMPERATURE_URL {temperature_url})')
+        logger.info(f'Creating new instance of HeatingSystem\n(GPIO_PIN: {gpio_pin}, TEMPERATURE_URL: {temperature_url})')
         if test:
             self.pi = fake_pi()
         elif raspberry_pi_ip is None:
