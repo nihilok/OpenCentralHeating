@@ -41,6 +41,7 @@ class HeatingSystem:
         self.conf = self.get_or_create_config()
         self.measurements = self.get_measurements()
         self.advance_on = None
+        self.advance_end: int = 0
         self.thread = None
         if self.conf.program_on:
             self.program_on()
@@ -225,10 +226,10 @@ class HeatingSystem:
 
     async def advance(self, mins: int = 30):
         self.advance_on = time.time()
+        self.advance_end = self.advance_on + mins*60
         self.conf.advance = Advance(on=True, start=self.advance_on)
         self.save_state()
-        check = self.advance_on
-        while check > time.time() - (mins * 60):
+        while self.advance_end > time.time():
             if self.within_program_time or not self.advance_on:
                 await self.cancel_advance()
                 break
@@ -252,6 +253,7 @@ class HeatingSystem:
     async def cancel_advance(self):
         if self.advance_on:
             self.advance_on = None
+            self.advance_end = 0
             logger.info("Advance cancelled")
         self.conf.advance = Advance(on=False)
         await self.main_task()
