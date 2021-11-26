@@ -14,7 +14,7 @@ from .custom_datetimes import BritishTime
 from .fake_pi import fake_pi
 from .models import HeatingConf, Advance
 from .telegram_bot import send_message
-from .times import _new_time, _delete_time
+from .times import _new_time, _delete_time, get_weekday, _check_times
 from .times.models import HeatingPeriod, HeatingPeriodModelCreator, HeatingPeriodModel
 from ..auth.models import HouseholdMemberPydantic
 from ..logger import get_logger
@@ -274,19 +274,11 @@ class HeatingSystem:
         await self.main_task()
         self.save_state()
 
-    async def complex_check_time(self, user: HouseholdMemberPydantic):
-        weekday = datetime.today().weekday()
-        weekday = calendar.day_name[weekday].lower()
+    async def complex_check_time(self):
         times = HeatingPeriodModelCreator.from_queryset(
-            HeatingPeriod.filter(household_id=user.household_id)
+            HeatingPeriod.filter(household_id=self.household_id)
         )
-        now = time.time()
-        for _time in sorted(times, key=lambda x: x.time_on):
-            for day, checked in _time.days.dict().items():
-                if checked and day == weekday:
-                    if _time.time_on < now < _time.time_off:
-                        return True
-        return False
+        return await _check_times(times)
 
     async def new_time(self, period: HeatingPeriodModel):
         return await _new_time(self.household_id, period)
