@@ -3,11 +3,17 @@ from typing import Optional
 from fastapi import Depends, APIRouter, HTTPException
 from pydantic import ValidationError
 
-from api.heating.constants import WEATHER_URL, TEMPERATURE_URL, GPIO_PIN, RASPBERRY_PI_IP
+from api.heating.constants import (
+    WEATHER_URL,
+    TEMPERATURE_URL,
+    GPIO_PIN,
+    RASPBERRY_PI_IP,
+)
 from .models import Advance, HeatingConf, HeatingInfo, ConfResponse, WeatherReport
 
 from .central_heating import HeatingSystem
 from .constants import TESTING
+from .times import HeatingPeriod, HeatingPeriodModel, HeatingPeriodModelCreator
 from ..auth.authentication import get_current_active_user
 from ..auth.models import HouseholdMemberPydantic
 from ..cache import get_weather, set_weather
@@ -46,7 +52,9 @@ async def update_heating_conf(
         await hs.update_conf(conf)
         return await heating_conf()
     except ValidationError:
-        raise HTTPException(status_code=422, detail='Unable to update program with given data')
+        raise HTTPException(
+            status_code=422, detail="Unable to update program with given data"
+        )
 
 
 @router.get("/heating/on_off/", response_model=ConfResponse)
@@ -78,6 +86,28 @@ async def cancel_advance(
     """Cancels advance task"""
     await hs.cancel_advance()
     return Advance(on=False, relay=hs.relay_state)
+
+
+@router.get("/heating/times/")
+async def get_heating_periods(
+    user: HouseholdMemberPydantic = Depends(get_current_active_user),
+):
+    return await hs.get_times()
+
+
+@router.post("/heating/times/")
+async def new_period(
+    period: HeatingPeriodModel,
+    user: HouseholdMemberPydantic = Depends(get_current_active_user),
+):
+    return await HeatingPeriodModelCreator.from_tortoise_orm(
+        await HeatingPeriod.create(**period.dict(exclude_unset=True))
+    )
+
+
+@router.delete("/heating/times/")
+async def delete_time(period_id: int):
+    return await hs.remove_time(period_id=period_id)
 
 
 # Weather endpoint:

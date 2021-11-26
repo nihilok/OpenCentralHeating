@@ -29,7 +29,7 @@ app.add_middleware(
 register_tortoise(
     app,
     db_url=f"sqlite://{os.path.abspath(os.getcwd())}/db.sqlite3",
-    modules={"models": ["api.auth.models"]},
+    modules={"models": ["api.auth.models", "api.heating.times.models"]},
     generate_schemas=True,
     add_exception_handlers=True,
 )

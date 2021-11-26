@@ -2,6 +2,8 @@ import asyncio
 import json
 import os
 import time
+import calendar
+from datetime import datetime
 from typing import Optional
 
 import pigpio
@@ -12,6 +14,9 @@ from .custom_datetimes import BritishTime
 from .fake_pi import fake_pi
 from .models import HeatingConf, Advance
 from .telegram_bot import send_message
+from .times import _new_time, _delete_time
+from .times.models import HeatingPeriod, HeatingPeriodModelCreator, HeatingPeriodModel
+from ..auth.models import HouseholdMemberPydantic
 from ..logger import get_logger
 
 
@@ -24,11 +29,18 @@ class HeatingSystem:
     PROGRAM_LOOP_INTERVAL = 60
 
     def __init__(
-        self, gpio_pin: int, temperature_url: str, test: bool = False, raspberry_pi_ip: Optional[str] = None
+        self,
+        gpio_pin: int,
+        temperature_url: str,
+        test: bool = False,
+        raspberry_pi_ip: Optional[str] = None,
+        household_id: Optional[int] = None,
     ):
         """Create connection with temperature api and load settings
         from config file"""
-        logger.info(f'Creating new instance of HeatingSystem\n(GPIO_PIN: {gpio_pin}, TEMPERATURE_URL: {temperature_url})')
+        logger.info(
+            f"Creating new instance of HeatingSystem\n(GPIO_PIN: {gpio_pin}, TEMPERATURE_URL: {temperature_url})"
+        )
         if test:
             self.pi = fake_pi()
         elif raspberry_pi_ip is None:
@@ -43,6 +55,7 @@ class HeatingSystem:
         self.advance_on = None
         self.advance_end: int = 0
         self.thread = None
+        self.household_id = household_id
         if self.conf.program_on:
             self.program_on()
         else:
@@ -226,7 +239,7 @@ class HeatingSystem:
 
     async def advance(self, mins: int = 30):
         self.advance_on = time.time()
-        self.advance_end = self.advance_on + mins*60
+        self.advance_end = self.advance_on + mins * 60
         self.conf.advance = Advance(on=True, start=self.advance_on)
         self.save_state()
         while self.advance_end > time.time():
@@ -247,7 +260,9 @@ class HeatingSystem:
         loop.create_task(self.advance(mins))
         while not self.advance_on and not self.advance_end:
             await asyncio.sleep(0.1)
-        logger.info(f"Advance started (scheduled until {BritishTime.fromtimestamp(self.advance_end).strftime('%H:%M:%S')})")
+        logger.info(
+            f"Advance started (scheduled until {BritishTime.fromtimestamp(self.advance_end).strftime('%H:%M:%S')})"
+        )
         return self.advance_on
 
     async def cancel_advance(self):
@@ -258,3 +273,29 @@ class HeatingSystem:
         self.conf.advance = Advance(on=False)
         await self.main_task()
         self.save_state()
+
+    async def complex_check_time(self, user: HouseholdMemberPydantic):
+        weekday = datetime.today().weekday()
+        weekday = calendar.day_name[weekday].lower()
+        times = HeatingPeriodModelCreator.from_queryset(
+            HeatingPeriod.filter(household_id=user.household_id)
+        )
+        now = time.time()
+        for _time in sorted(times, key=lambda x: x.time_on):
+            for day, checked in _time.days.dict().items():
+                if checked and day == weekday:
+                    if _time.time_on < now < _time.time_off:
+                        return True
+        return False
+
+    async def new_time(self, period: HeatingPeriodModel):
+        return await _new_time(self.household_id, period)
+
+    @staticmethod
+    async def remove_time(period_id: int):
+        return await _delete_time(period_id)
+
+    async def get_times(self):
+        return await HeatingPeriodModelCreator.from_queryset(
+            HeatingPeriod.filter(household_id=self.household_id)
+        )
