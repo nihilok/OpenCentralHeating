@@ -9,6 +9,7 @@ from typing import Optional
 import pigpio
 import requests
 from fastapi.encoders import jsonable_encoder
+from pydantic import ValidationError
 
 from .custom_datetimes import BritishTime
 from .fake_pi import fake_pi
