@@ -13,7 +13,7 @@ from .models import Advance, HeatingConf, HeatingInfo, ConfResponse, WeatherRepo
 
 from .central_heating import HeatingSystem
 from .constants import TESTING
-from .times import HeatingPeriod, HeatingPeriodModel, HeatingPeriodModelCreator
+from .times import HeatingPeriodModel
 from ..auth.authentication import get_current_active_user
 from ..auth.models import HouseholdMemberPydantic
 from ..cache import get_weather, set_weather
@@ -100,9 +100,7 @@ async def new_period(
     period: HeatingPeriodModel,
     user: HouseholdMemberPydantic = Depends(get_current_active_user),
 ):
-    return await HeatingPeriodModelCreator.from_tortoise_orm(
-        await HeatingPeriod.create(**period.dict(exclude_unset=True))
-    )
+    return await hs.new_time(period)
 
 
 @router.delete("/heating/times/")
