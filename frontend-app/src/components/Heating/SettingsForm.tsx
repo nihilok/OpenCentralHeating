@@ -117,7 +117,7 @@ export function SettingsForm() {
       }
       checkResponse(data.sensor_readings, setReadings);
       checkResponse(data.advance, setOverride);
-      checkResponse(data.indoor_temperature, setCurrentTemp);
+      checkResponse(data.sensor_readings.temperature, setCurrentTemp);
       checkResponse(data.relay_on, setRelayOn);
     },
     [parseConf]
@@ -325,7 +325,7 @@ export function SettingsForm() {
                     TempDisplay__On: relayOn,
                   })}
                 >
-                  {currentTemp.toFixed(1)}&deg;C
+                  {readings.temperature.toFixed(1)}&deg;C
                 </h1>
               </StyledTooltip>
             )}

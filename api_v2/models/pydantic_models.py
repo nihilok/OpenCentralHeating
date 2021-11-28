@@ -1,39 +1,29 @@
-from typing import Optional, List
-
-import re
 from datetime import datetime
+from typing import Optional
 
-from pydantic import BaseModel, root_validator
-from tortoise import Model, fields
+from pydantic import BaseModel
+from pydantic.class_validators import root_validator
+
+from . import Household, HouseholdMember, HeatingPeriod
 from tortoise.contrib.pydantic import pydantic_model_creator
-from tortoise.validators import RegexValidator
-from tortoise.exceptions import ValidationError
 
 
-def target_validator(value: int):
-    if value > 30 or value < 5:
-        raise ValidationError(f'Target must be between 30 and 5 ({value} is not)')
+HouseholdPydantic = pydantic_model_creator(Household, name="Household")
+HouseholdPydanticIn = pydantic_model_creator(
+    Household, name="HouseholdIn", exclude_readonly=True
+)
+HouseholdMemberPydantic = pydantic_model_creator(
+    HouseholdMember, name="HouseholdMember"
+)
+HouseholdMemberPydanticIn = pydantic_model_creator(
+    HouseholdMember, name="HouseholdMemberIn", exclude_readonly=True
+)
 
 
-class HeatingPeriod(Model):
-    period_id = fields.IntField(pk=True, auto_increment=True)
-    time_on = fields.CharField(5, validators=[RegexValidator('[0-1]?[0-9]:[0-5][0-9]', re.I)])
-    time_off = fields.CharField(5, validators=[RegexValidator('[0-1]?[0-9]:[0-5][0-9]', re.I)])
-    target = fields.IntField(validators=[target_validator])
-    days = fields.JSONField()
-    household = fields.ForeignKeyField(model_name='models.Household', related_name='periods', on_delete=fields.CASCADE)
-    created = fields.DatetimeField(auto_now_add=True)
-    created_by = fields.ForeignKeyField(model_name='models.HouseholdMember', related_name='periods', on_delete=fields.CASCADE)
-
-class HeatingPeriod_TEST(Model):
-    period_id = fields.IntField(pk=True, auto_increment=True)
-    time_on = fields.CharField(5, validators=[RegexValidator('[0-1]?[0-9]:[0-5][0-9]', re.I)])
-    time_off = fields.CharField(5, validators=[RegexValidator('[0-1]?[0-9]:[0-5][0-9]', re.I)])
-    target = fields.IntField(validators=[target_validator])
-    days = fields.JSONField()
-    household = fields.ForeignKeyField(model_name='models.Household', related_name='periods_test', on_delete=fields.CASCADE)
-    created = fields.DatetimeField(auto_now_add=True)
-    created_by = fields.ForeignKeyField(model_name='models.HouseholdMember', related_name='periods_test', on_delete=fields.CASCADE)
+class PasswordChange(BaseModel):
+    current_password: str
+    password_check: str
+    new_password: str
 
 
 class Days(BaseModel):
@@ -62,8 +52,6 @@ class HeatingPeriodModel(BaseModel):
 
 
 HeatingPeriodModelCreator = pydantic_model_creator(HeatingPeriod, name='HeatingPeriod')
-
-
 
 
 class Advance(BaseModel):
@@ -134,48 +122,3 @@ class HeatingInfo(BaseModel):
 
 class ConfResponse(BaseModel):
     conf: HeatingConf
-
-
-class WeatherDetails(BaseModel):
-    id: int
-    main: str
-    description: str
-    icon: str
-
-
-class WeatherDaySingle(BaseModel):
-    dt: int
-    sunrise: int
-    sunset: int
-    temp: float
-    feels_like: float
-    pressure: int
-    humidity: int
-    dew_point: float
-    uvi: float
-    clouds: int
-    visibility: Optional[int] = None
-    wind_speed: float
-    wind_deg: int
-    wind_gust: Optional[float]
-    weather: List[WeatherDetails]
-
-
-class DayBreakDown(BaseModel):
-    day: float
-    min: Optional[float] = None
-    max: Optional[float] = None
-    night: float
-    eve: float
-    morn: float
-
-
-class WeatherDay(WeatherDaySingle):
-    temp: DayBreakDown
-    feels_like: DayBreakDown
-    pop: int
-
-
-class WeatherReport(BaseModel):
-    current: WeatherDaySingle
-    daily: List[WeatherDay]

@@ -1,7 +1,8 @@
-import os
 from fastapi import FastAPI
 from tortoise.contrib.fastapi import register_tortoise
+from tortoise import Tortoise
 from fastapi.middleware.cors import CORSMiddleware
+from . import settings
 from .auth.constants import origins
 from .auth import router as auth_router
 from .secrets import router as secrets_router
@@ -10,9 +11,6 @@ from .heating import router as heating_router
 
 # Create ASGI app:
 app = FastAPI()
-app.include_router(auth_router)
-app.include_router(secrets_router)
-app.include_router(heating_router)
 
 
 # CORS Permissions:
@@ -24,12 +22,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+Tortoise.init_models(settings.TORTOISE_MODELS_LIST, "models")
 
 # Register tortoise-orm models:
 register_tortoise(
     app,
-    db_url=f"sqlite://{os.path.abspath(os.getcwd())}/db.sqlite3",
-    modules={"models": ["api.auth.models", "api.heating.times.models"]},
+    config=settings.TORTOISE_ORM,
     generate_schemas=True,
     add_exception_handlers=True,
 )
+
+app.include_router(auth_router)
+app.include_router(secrets_router)
+app.include_router(heating_router)

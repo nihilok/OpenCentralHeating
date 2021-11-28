@@ -2,7 +2,7 @@ import calendar
 import time
 from datetime import datetime
 
-from api.heating.times.models import HeatingPeriodModel, HeatingPeriod, HeatingPeriodModelCreator
+from ...heating.models import HeatingPeriodModel, HeatingPeriod, HeatingPeriodModelCreator
 
 
 async def _new_time(household_id: int, period: HeatingPeriodModel, user_id: int):

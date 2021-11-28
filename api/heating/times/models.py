@@ -49,6 +49,6 @@ class HeatingPeriodModel(BaseModel):
         return v
 
 
-Tortoise.init_models(["api.auth.models", "api.heating.times.models"], "models")
-
 HeatingPeriodModelCreator = pydantic_model_creator(HeatingPeriod, name='HeatingPeriod')
+
+
