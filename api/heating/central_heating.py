@@ -289,7 +289,7 @@ class HeatingSystem:
         self.save_state()
 
     async def complex_check_time(self):
-        times = HeatingPeriodModelCreator.from_queryset(
+        times = await HeatingPeriodModelCreator.from_queryset(
             HeatingPeriod.filter(household_id=self.household_id)
         )
         return await _check_times(times)
