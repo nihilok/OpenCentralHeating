@@ -38,6 +38,7 @@ class HeatingPeriodModel(BaseModel):
     time_on: str
     time_off: str
     days: Days
+    target: int
 
     @root_validator
     def check_order(cls, v):
