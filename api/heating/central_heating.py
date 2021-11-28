@@ -204,7 +204,7 @@ class HeatingSystem:
         if (
             self.within_program_time
             and not self.db_mode
-            or self.within_time_period()
+            or await self.within_time_period()
             and self.db_mode
         ):
             if self.advance_on:
