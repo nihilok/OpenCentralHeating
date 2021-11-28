@@ -10,6 +10,7 @@ import pigpio
 import requests
 from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
+from tortoise import run_async
 
 from .custom_datetimes import BritishTime
 from .fake_pi import fake_pi
@@ -36,6 +37,7 @@ class HeatingSystem:
         test: bool = False,
         raspberry_pi_ip: Optional[str] = None,
         household_id: Optional[int] = None,
+        db_mode: bool = True,
     ):
         """Create connection with temperature api and load settings
         from config file"""
@@ -57,6 +59,7 @@ class HeatingSystem:
         self.advance_end: int = 0
         self.thread = None
         self.household_id = household_id
+        self.db_mode = db_mode
         if self.conf.program_on:
             self.program_on()
         else:
@@ -130,6 +133,11 @@ class HeatingSystem:
     def relay_state(self) -> bool:
         return not not self.pi.read(self.gpio_pin)
 
+    async def within_time_period(self):
+        if not self.conf.program_on:
+            return False
+        return await self.complex_check_time()
+
     @property
     def within_program_time(self) -> bool:
         if not self.conf.program_on:
@@ -193,7 +201,12 @@ class HeatingSystem:
     async def main_task(self):
         """If time is within range, turn on relay if temp is below range,
         turn off if above range."""
-        if self.within_program_time:
+        if (
+            self.within_program_time
+            and not self.db_mode
+            or self.within_time_period()
+            and self.db_mode
+        ):
             if self.advance_on:
                 await self.cancel_advance()
             await self.thermostat_control()
@@ -281,8 +294,8 @@ class HeatingSystem:
         )
         return await _check_times(times)
 
-    async def new_time(self, period: HeatingPeriodModel):
-        return await _new_time(self.household_id, period)
+    async def new_time(self, period: HeatingPeriodModel, user_id: int):
+        return await _new_time(self.household_id, period, user_id)
 
     @staticmethod
     async def remove_time(period_id: int):

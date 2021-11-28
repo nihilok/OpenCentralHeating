@@ -1,17 +1,20 @@
-import asyncio
+import re
 from datetime import datetime
 
 from pydantic import BaseModel, root_validator
-from tortoise import Model, fields
+from tortoise import Model, fields, Tortoise
 from tortoise.contrib.pydantic import pydantic_model_creator
+from tortoise.validators import RegexValidator
 
 
 class HeatingPeriod(Model):
     period_id = fields.IntField(pk=True, auto_increment=True)
-    time_on = fields.CharField(5)
-    time_off = fields.CharField(5)
+    time_on = fields.CharField(5, validators=[RegexValidator('[0-1]?[0-9]:[0-5][0-9]', re.I)])
+    time_off = fields.CharField(5, validators=[RegexValidator('[0-1]?[0-9]:[0-5][0-9]', re.I)])
     days = fields.JSONField()
     household = fields.ForeignKeyField(model_name='models.Household', related_name='periods', on_delete=fields.CASCADE)
+    created = fields.DatetimeField(auto_now_add=True)
+    created_by = fields.ForeignKeyField(model_name='models.HouseholdMember', related_name='periods', on_delete=fields.CASCADE)
 
 
 class Days(BaseModel):
@@ -37,5 +40,7 @@ class HeatingPeriodModel(BaseModel):
             raise ValueError('On-time cannot be after off-time')
         return v
 
+
+Tortoise.init_models(["api.auth.models", "api.heating.times.models"], "models")
 
 HeatingPeriodModelCreator = pydantic_model_creator(HeatingPeriod, name='HeatingPeriod')

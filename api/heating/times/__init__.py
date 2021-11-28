@@ -5,7 +5,7 @@ from datetime import datetime
 from api.heating.times.models import HeatingPeriodModel, HeatingPeriod, HeatingPeriodModelCreator
 
 
-async def _new_time(household_id: int, period: HeatingPeriodModel):
+async def _new_time(household_id: int, period: HeatingPeriodModel, user_id: int):
     query = HeatingPeriod.filter(household_id=household_id)
     for p in await HeatingPeriodModelCreator.from_queryset(query):
         if period.time_on <= p.time_on < period.time_off:
@@ -13,7 +13,7 @@ async def _new_time(household_id: int, period: HeatingPeriodModel):
                 if day[1]:
                     if p.days[day[0]]:
                         raise ValueError("New period overlaps with another")
-    new_period = await HeatingPeriod.create(household_id=household_id, **period.dict(exclude_unset=True))
+    new_period = await HeatingPeriod.create(household_id=household_id, created_by_id=user_id, **period.dict(exclude_unset=True))
     return await HeatingPeriodModelCreator.from_tortoise_orm(new_period)
 
 

@@ -20,7 +20,7 @@ from ..cache import get_weather, set_weather
 from ..utils.async_requests import get_json
 
 
-hs = HeatingSystem(GPIO_PIN, TEMPERATURE_URL, TESTING, RASPBERRY_PI_IP, 1)
+hs = HeatingSystem(GPIO_PIN, TEMPERATURE_URL, TESTING, RASPBERRY_PI_IP, 1, True)
 router = APIRouter()
 
 
@@ -101,13 +101,16 @@ async def new_period(
     user: HouseholdMemberPydantic = Depends(get_current_active_user),
 ):
     try:
-        return await hs.new_time(period)
+        return await hs.new_time(period, user.id)
     except ValueError as f:
         return HTTPException(status_code=422, detail=str(f))
 
 
 @router.delete("/heating/times/")
-async def delete_time(period_id: int):
+async def delete_time(
+    period_id: int,
+    user: HouseholdMemberPydantic = Depends(get_current_active_user),
+):
     return await hs.remove_time(period_id=period_id)
 
 
