@@ -42,6 +42,7 @@ class PHeatingPeriod(BaseModel):
     days: Days
     target: int
     heating_system_id: int
+    period_id: Optional[int] = None
 
     @root_validator
     def check_order(cls, v):
