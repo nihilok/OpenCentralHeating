@@ -15,7 +15,7 @@ class RedisCache:
 
     def __init__(self):
         if cache_singleton is not None:
-            logger.warning("Cache already exists")
+            logger.debug("Cache already exists")
             self.cache = cache_singleton
             self.ready = True
             return
