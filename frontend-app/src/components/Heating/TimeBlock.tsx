@@ -9,7 +9,7 @@ export interface TimePeriod {
   time_off: string;
   target: number;
   period_id?: number;
-  heating_system: { system_id: number };
+  heating_system_id: number;
 }
 
 interface Props {
@@ -40,7 +40,7 @@ export function TimeBlock({ timePeriod }: Props) {
         time_on: currentState.time_on,
         time_off: currentState.time_off,
         target: currentState.target,
-        heating_system_id: currentState.heating_system.system_id,
+        heating_system_id: currentState.heating_system_id,
         days: {
           monday: true,
           tuesday: true,
@@ -100,7 +100,8 @@ export function TimeBlock({ timePeriod }: Props) {
   }, [debounce, state]);
 
   return (
-    <div className={"container"}>
+    <div className={"container time-block"}>
+      <p className="text-muted no-margin">System ID: {state.heating_system_id}</p>
       <Stack
         spacing={2}
         direction="row"
