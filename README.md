@@ -6,6 +6,7 @@
 #### Prerequisites
 - Python3.7+
 - Git
+- Redis (`sudo apt install redis-server`)
 
 if you don't have pip3 and/or venv installed run:
 ```sh
