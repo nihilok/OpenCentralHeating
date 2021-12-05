@@ -79,7 +79,8 @@ async def get_heating_periods(
 ):
     return TimesResponse(
         periods=[
-            PHeatingPeriod(**period) for period in await get_times(user.household_id)
+            PHeatingPeriod(**period.dict(exclude_unset=True))
+            for period in await get_times(user.household_id)
         ]
     )
 
