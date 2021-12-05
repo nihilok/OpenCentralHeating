@@ -54,7 +54,7 @@ server {
     listen 80;
     server_name heating.example.app;
     location / {
-        root /home/$USER/apps/heating/build;
+        root /home/$USER/apps/OpenCentralHeating/frontend-app/build;
         index index.html;
         try_files $uri /index.html$is_args$args =404;
     }	
@@ -94,7 +94,23 @@ server {
 }
 ```
 
-And your supervisor program group conf might look like this:
+And your supervisor program group conf (e.g. `/etc/supervisor/conf.d/heating.conf`) might look like this:
 ```
-coming soon
+[program:heating]
+directory=/home/$USER/apps/OpenCentralHeating
+command=open-heating
+user=$USER
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+stdout_logfile=/var/log/heating/heating-out.log
+stdout_logfile_maxbytes=1MB
+stdout_logfile_backups=10
+stdout_capture_maxbytes=1MB
+stdout_events_enabled=false
+stderr_logfile=/var/log/heating/heating-errors.log
+stderr_logfile_maxbytes=1MB
+stderr_logfile_backups=10
+stderr_capture_maxbytes=1MB
 ```
