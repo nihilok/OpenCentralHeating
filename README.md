@@ -28,6 +28,8 @@ You will also be prompted for other information:
 - the IP of the Raspberry Pi controlling the relay for each loop (leave blank if installing on the Pi itself)
 - the number of the GPIO pin controlling the relay of each loop. (If same Pi, these must all be different obviously.)
 
+Heating systems can also be added / setup / updated and removed via the API.
+
 If you are running the script for a second time, the setup information you provide here will overwrite the previous 
 inputs. You can choose '`n`' to skip this step. 
 The rest of the installation script should be idempotent, unless stopped halfway through the first time, in which 
@@ -47,7 +49,37 @@ directory that has been created as you wish, for example using Nginx as above.
 
 Your nginx config might look like this:
 ```
-coming soon
+server {
+    listen 80;
+    server_name smarthome.example.app;
+    location / {
+        root /home/$USER/apps/smarthome/build;
+        index index.html;
+        try_files $uri /index.html$is_args$args =404;
+    }	
+
+}
+
+server {
+    listen 80;
+    server_name heating.example.app;
+    location / {
+        root /home/$USER/apps/heating/build;
+        index index.html;
+        try_files $uri /index.html$is_args$args =404;
+    }	
+
+}
+
+server {
+    listen 80;
+    server_name api.smarthome.example.app;
+    location / {
+        proxy_pass http://localhost:8000;
+        include /etc/nginx/proxy_params;
+        proxy_redirect off;
+    }
+}
 ```
 
 And your supervisor program group conf might look like this:
