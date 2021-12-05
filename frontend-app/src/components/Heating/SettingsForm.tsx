@@ -6,13 +6,13 @@ import { TEMPERATURE_INTERVAL } from "../../constants/constants";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
 import { checkResponse } from "../../lib/helpers";
 import { FullScreenLoader } from "../Loaders/FullScreenLoader";
-import { HelpButton } from "../HelpButton/HelpButton";
 import { FullScreenComponent } from "../Custom/FullScreenComponent";
 import { WeatherButton } from "../WeatherButton/WeatherButton";
 import { Barometer } from "../Barometer/Barometer";
 import { TopBar } from "../Custom/TopBar";
 import { TimePeriod } from "./TimeBlock";
 import { ProgramOnOffSwitch } from "./ProgramOnOffSwitch";
+import {SettingsButton} from "../IconButtons/SettingsButton";
 
 interface Sensors {
   temperature: number;
@@ -77,23 +77,11 @@ export function SettingsForm() {
     return () => clearInterval(interval);
   }, [fetch, parseData, getInfo]);
 
-  const [, setTimePeriods] = React.useState<TimePeriod[]>();
-
-  React.useEffect(() => {
-    fetch("/v2/heating/times").then((res) =>
-      res.json().then((data: TimePeriod[]) => {
-        if (res.status === 200) {
-          setTimePeriods(data);
-        }
-      })
-    );
-  }, [fetch]);
-
   return (
     <FullScreenComponent>
       <TopBar>
         <WeatherButton />
-        <HelpButton helpMode={helpMode} setHelpMode={setHelpMode} />
+        <SettingsButton helpMode={helpMode} setHelpMode={setHelpMode} />
       </TopBar>
       <form className="heating-settings">
         {isLoading ? (
@@ -130,7 +118,6 @@ export function SettingsForm() {
         )}
       </form>
       <ProgramOnOffSwitch
-        helpMode={helpMode}
         state={programOn}
         systemId={systemId}
         parseResponse={parseData}

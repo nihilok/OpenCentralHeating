@@ -9,6 +9,7 @@ export interface TimePeriod {
   time_off: string;
   target: number;
   period_id?: number;
+  heating_system: { system_id: number; };
 }
 
 interface Props {

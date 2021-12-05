@@ -6,13 +6,12 @@ import {useFetchWithToken} from "../../hooks/FetchWithToken";
 import {APIResponse} from "./SettingsForm";
 
 interface Props {
-  helpMode: boolean;
   state: boolean;
   systemId: number;
   parseResponse: (response: APIResponse) => void;
 }
 
-export function ProgramOnOffSwitch({ helpMode, state, systemId, parseResponse }: Props) {
+export function ProgramOnOffSwitch({ state, systemId, parseResponse }: Props) {
 
   const fetch = useFetchWithToken();
 
@@ -36,11 +35,6 @@ export function ProgramOnOffSwitch({ helpMode, state, systemId, parseResponse }:
   }
 
   return (
-    <StyledTooltip
-      title="Frost stat mode when off (5&deg;C)"
-      placement="top"
-      disabled={!helpMode}
-    >
       <Stack
         spacing={2}
         direction="row"
@@ -67,6 +61,5 @@ export function ProgramOnOffSwitch({ helpMode, state, systemId, parseResponse }:
           )}
         </h2>
       </Stack>
-    </StyledTooltip>
   );
 }
