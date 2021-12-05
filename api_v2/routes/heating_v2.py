@@ -116,7 +116,9 @@ async def update_time(
     p = await HeatingPeriod.get(period_id=period_id)
     p.__dict__.update(**period.dict(exclude_unset=True))
     await p.save()
-    return await HeatingPeriodModelCreator.from_tortoise_orm(p)
+    return PHeatingPeriod(
+        **p.__dict__
+    )
 
 
 @router.post("/heating/system")
