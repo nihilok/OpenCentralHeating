@@ -48,18 +48,8 @@ To build the front-end application, cd into the frontend-app directory and insta
 directory that has been created as you wish, for example using Nginx as above.
 
 Your nginx config might look like this:
-```
-server {
-    listen 80;
-    server_name smarthome.example.app;
-    location / {
-        root /home/$USER/apps/smarthome/build;
-        index index.html;
-        try_files $uri /index.html$is_args$args =404;
-    }	
-
-}
-
+```nginx config
+# React app:
 server {
     listen 80;
     server_name heating.example.app;
@@ -68,14 +58,36 @@ server {
         index index.html;
         try_files $uri /index.html$is_args$args =404;
     }	
-
 }
 
+# Backend:
 server {
     listen 80;
-    server_name api.smarthome.example.app;
+    server_name api.heating.example.app;
     location / {
-        proxy_pass http://localhost:8000;
+        proxy_pass http://localhost:8080;
+        include /etc/nginx/proxy_params;
+        proxy_redirect off;
+    }
+}
+
+# Proxy to sensor 1
+server {
+    listen 80;
+    server_name upstairs.sensor.example.app;
+    location / {
+        proxy_pass http://192.168.1.100;
+        include /etc/nginx/proxy_params;
+        proxy_redirect off;
+    }
+}
+
+# Proxy to sensor 2
+server {
+    listen 80;
+    server_name downstairs.sensor.example.app;
+    location / {
+        proxy_pass http://192.168.1.101;
         include /etc/nginx/proxy_params;
         proxy_redirect off;
     }
