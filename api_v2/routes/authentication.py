@@ -54,9 +54,7 @@ def verify_password(password, hash):
 async def authenticate_user(
     username: str, password: str
 ) -> Optional[HouseholdMemberPydantic]:
-    user = await HouseholdMemberPydantic.from_queryset_single(
-        HouseholdMember.get(name=username)
-    )
+    user = await HouseholdMember.get(name=username)
     try:
         if not verify_password(password, user.password_hash):
             return False
@@ -110,13 +108,14 @@ async def get_current_active_user(
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> Token:
-    print(form_data.username + " logging in")
+    logger.debug(f'Attempted login from {form_data.username}')
     user = await authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
+    logger.debug(f'Login successful for {form_data.username}')
     access_token = create_access_token(data={"sub": user.name})
     return Token(access_token=access_token, token_type="bearer")
 
