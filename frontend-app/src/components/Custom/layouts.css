@@ -3,6 +3,7 @@
     grid-template-columns: 3fr 2fr 3fr;
     width: 100%;
     align-items: center;
+    justify-content: center;
     margin: 1rem auto;
 }
 
@@ -17,7 +18,8 @@
 }
 
 .container {
-    width: clamp(30ch, 50ch, 80vw);
+    /*width: clamp(30ch, 50ch, 80vw);*/
     margin: auto;
     text-align: center;
+    max-width: 80vw;
 }

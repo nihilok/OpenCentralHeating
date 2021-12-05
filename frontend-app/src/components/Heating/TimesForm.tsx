@@ -14,27 +14,38 @@ interface TimesResponse {
 export function TimesForm(props: Props) {
   const fetch = useFetchWithToken();
   const [timePeriods, setTimePeriods] = React.useState<TimePeriod[]>([]);
+  const [allSystems, setAllSystems] = React.useState<number[]>([])
 
   React.useEffect(() => {
     fetch("/v2/heating/times").then((res) =>
       res.json().then((data: TimesResponse) => {
         if (res.status === 200) {
+          let systemsArr: number[] = []
+          data.periods.forEach((period) => {
+            const system_id = period.heating_system_id
+            if (!systemsArr.includes(system_id as number)) {
+              systemsArr.push(system_id as number)
+            }
+          })
+          console.log(systemsArr)
+          setAllSystems(systemsArr)
           setTimePeriods(data.periods);
         }
       })
     );
   }, [fetch]);
+
   return (
     <FullScreenComponent>
       <TopBar>
         <BackButton path={"/"} />
         <div />
       </TopBar>
-      {timePeriods ? timePeriods.map((timePeriod: TimePeriod) => (
-        <>
-          <TimeBlock timePeriod={timePeriod} />
-        </>
-      )) : ''}
+      <div className={'times-container'}>{allSystems.map((id) => (
+        timePeriods.filter(period => period.heating_system_id === id).map((timePeriod: TimePeriod) => (
+        <TimeBlock timePeriod={timePeriod}/>
+      ))))}
+      </div>
     </FullScreenComponent>
   );
 }
