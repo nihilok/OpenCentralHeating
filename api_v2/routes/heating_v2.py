@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -6,19 +6,23 @@ from api_v2.heating.manage_systems import (
     get_system_from_memory_http,
     get_system_instance_from_memory,
     create_system,
-    _get_system,
+    get_system,
     create_instance,
     kill_system,
 )
-from api_v2.heating.manage_times import get_times, _new_time, _delete_time
-from api_v2.models import HouseholdMember, HeatingPeriod, Household
-from api_v2.models.pydantic_models import (
+from api_v2.heating.manage_times import get_times, new_time, delete_time
+from api_v2.models import (
+    HouseholdMember,
+    HeatingPeriod,
+    Household,
     HeatingV2Response,
     SystemInfo,
     PHeatingPeriod,
     HeatingPeriodModelCreator,
     PHeatingSystemIn,
-    HeatingSystemModelCreator, ProgramOnlyResponse,
+    HeatingSystemModelCreator,
+    ProgramOnlyResponse,
+    TimesResponse,
 )
 from api_v2.routes.authentication import get_current_active_user, get_current_user
 
@@ -26,7 +30,9 @@ router = APIRouter(prefix="/v2")
 
 
 @router.get("/heating")
-async def get_heating_info(system_id: Optional[int] = None, user: HouseholdMember = Depends(get_current_user)):
+async def get_heating_info(
+    system_id: Optional[int] = None, user: HouseholdMember = Depends(get_current_user)
+):
     if system_id is not None:
         hs = await get_system_from_memory_http(system_id, user.household_id)
         system_info = SystemInfo(
@@ -38,7 +44,7 @@ async def get_heating_info(system_id: Optional[int] = None, user: HouseholdMembe
         return system_info
     response = HeatingV2Response()
     household = await Household.get(id=user.household_id)
-    await household.fetch_related('heating_systems')
+    await household.fetch_related("heating_systems")
     for system_from_db in household.heating_systems:
         if system_from_db.activated:
             system = await get_system_instance_from_memory(
@@ -54,7 +60,7 @@ async def get_heating_info(system_id: Optional[int] = None, user: HouseholdMembe
     return response
 
 
-@router.get('/heating/program')
+@router.get("/heating/program")
 async def heating_on_off(
     system_id: int, user: HouseholdMember = Depends(get_current_active_user)
 ):
@@ -71,7 +77,11 @@ async def heating_on_off(
 async def get_heating_periods(
     user: HouseholdMember = Depends(get_current_active_user),
 ):
-    return await get_times(user.household_id)
+    return TimesResponse(
+        periods=[
+            PHeatingPeriod(**period) for period in await get_times(user.household_id)
+        ]
+    )
 
 
 @router.post("/heating/times")
@@ -80,17 +90,17 @@ async def new_period(
     user: HouseholdMember = Depends(get_current_active_user),
 ):
     try:
-        return await _new_time(user.household_id, period, user.id)
+        return await new_time(user.household_id, period, user.id)
     except ValueError as e:
         raise HTTPException(422, str(e))
 
 
 @router.delete("/heating/times")
-async def delete_time(
+async def delete_period(
     period_id: int,
     user: HouseholdMember = Depends(get_current_active_user),
 ):
-    return await _delete_time(period_id=period_id)
+    return await delete_time(period_id=period_id)
 
 
 @router.put("/heating/times")
@@ -120,7 +130,7 @@ async def update_heating_system(
     system_in: PHeatingSystemIn,
     user: HouseholdMember = Depends(get_current_active_user),
 ):
-    system = await _get_system(system_id)
+    system = await get_system(system_id)
     system.__dict__.update(
         **system_in.dict(exclude_unset=True), household_id=user.household_id
     )

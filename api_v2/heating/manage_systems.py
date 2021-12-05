@@ -7,7 +7,7 @@ from .systems_in_memory import systems_in_memory
 from ..models import HeatingSystemModel, PHeatingSystemIn
 
 
-async def _get_system(system_id: int) -> HeatingSystemModel:
+async def get_system(system_id: int) -> HeatingSystemModel:
     return await HeatingSystemModel.get_by_system_id(system_id)
 
 
@@ -18,7 +18,7 @@ async def create_system(system: PHeatingSystemIn, household_id: int) -> HeatingS
 
 
 async def create_instance(system_id: int) -> bool:
-    model = await _get_system(system_id)
+    model = await get_system(system_id)
     if not systems_in_memory.get(system_id):
         systems_in_memory[system_id] = HeatingSystem(
             gpio_pin=model.gpio_pin,
@@ -53,7 +53,7 @@ async def get_all_systems_in_memory() -> Iterable[int]:
 
 
 async def kill_system(system_id: int) -> bool:
-    model = await _get_system(system_id)
+    model = await get_system(system_id)
     model.activated = False
     del systems_in_memory[system_id]
     await model.save()

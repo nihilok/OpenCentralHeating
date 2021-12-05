@@ -105,3 +105,7 @@ class ProgramOnlyResponse(BaseModel):
 
 class HeatingV2Response(BaseModel):
     systems: List[SystemInfo] = []
+
+
+class TimesResponse(BaseModel):
+    periods: List[PHeatingPeriod]

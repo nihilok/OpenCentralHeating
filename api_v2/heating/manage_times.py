@@ -5,15 +5,12 @@ from api_v2.models import PHeatingPeriod, HeatingPeriod, HeatingPeriodModelCreat
 
 
 async def get_times(household_id: int):
-    return await HeatingPeriodModelCreator.from_queryset(
-        HeatingPeriod.filter(household_id=household_id)
-    )
+    return await HeatingPeriod.filter(household_id=household_id)
 
 
-async def _new_time(household_id: int, period: PHeatingPeriod, user_id: int):
-    query = HeatingPeriod.filter(household_id=household_id)
-    for p in await HeatingPeriodModelCreator.from_queryset(query):
-        if p.heating_system.system_id == period.heating_system_id:
+async def new_time(household_id: int, period: PHeatingPeriod, user_id: int):
+    for p in await HeatingPeriod.filter(household_id=household_id):
+        if p.heating_system_id == period.heating_system_id:
             if period.time_on <= p.time_on < period.time_off:
                 for day in period.days.dict().items():
                     if day[1]:
@@ -27,7 +24,7 @@ async def _new_time(household_id: int, period: PHeatingPeriod, user_id: int):
     return await HeatingPeriodModelCreator.from_tortoise_orm(new_period)
 
 
-async def _delete_time(period_id: int):
+async def delete_time(period_id: int):
     period = await HeatingPeriod.get(period_id=period_id)
     await period.delete()
     return {}
@@ -38,7 +35,7 @@ def get_weekday():
     return calendar.day_name[weekday].lower()
 
 
-async def _check_times(times, system_id):
+async def check_times(times, system_id):
     weekday = get_weekday()
     now = BritishTime.now().time()
     for _time in sorted(times, key=lambda x: x.time_on):

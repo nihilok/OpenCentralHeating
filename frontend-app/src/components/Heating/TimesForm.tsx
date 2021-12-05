@@ -7,16 +7,19 @@ import {FullScreenComponent} from "../Custom/FullScreenComponent";
 
 interface Props {}
 
+interface TimesResponse {
+  periods: TimePeriod[];
+}
+
 export function TimesForm(props: Props) {
   const fetch = useFetchWithToken();
   const [timePeriods, setTimePeriods] = React.useState<TimePeriod[]>([]);
 
   React.useEffect(() => {
     fetch("/v2/heating/times").then((res) =>
-      res.json().then((data: TimePeriod[]) => {
+      res.json().then((data: TimesResponse) => {
         if (res.status === 200) {
-          console.log(data)
-          setTimePeriods(data);
+          setTimePeriods(data.periods);
         }
       })
     );
@@ -27,11 +30,11 @@ export function TimesForm(props: Props) {
         <BackButton path={"/"} />
         <div />
       </TopBar>
-      {timePeriods.map((timePeriod: TimePeriod) => (
+      {timePeriods ? timePeriods.map((timePeriod: TimePeriod) => (
         <>
           <TimeBlock timePeriod={timePeriod} />
         </>
-      ))}
+      )) : ''}
     </FullScreenComponent>
   );
 }

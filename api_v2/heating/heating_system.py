@@ -7,7 +7,7 @@ import pigpio
 import requests
 
 from .fake_pi import fake_pi
-from .manage_times import _check_times, get_times
+from .manage_times import check_times, get_times
 from ..utils import send_telegram_message, BritishTime
 from ..logger import get_logger
 from ..secrets import initialized_config as config
@@ -182,7 +182,7 @@ class HeatingSystem:
     async def complex_check_time(self):
         logger.debug("Checking times")
         times = await get_times(self.household_id)
-        self.current_period = await _check_times(times, self.system_id)
+        self.current_period = await check_times(times, self.system_id)
         if self.current_period is not None:
             logger.debug(
                 f"{self.current_period.time_on}->{self.current_period.time_off} ({self.current_period.target}'C)"

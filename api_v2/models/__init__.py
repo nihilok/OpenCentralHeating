@@ -22,6 +22,10 @@ from .pydantic_models import (
     ConfResponse,
     PHeatingSystemIn,
     HeatingSystemModelCreator,
+    TimesResponse,
+    HeatingV2Response,
+    SystemInfo,
+    ProgramOnlyResponse,
 )
 from .weather import (
     WeatherDay,
