@@ -41,7 +41,7 @@ async def check_times(times, system_id):
     weekday = get_weekday()
     now = BritishTime.now().time()
     for _time in sorted(times, key=lambda x: x.time_on):
-        if _time.heating_system_id == system_id or _time.all_systems:
+        if _time.heating_system.system_id == system_id or _time.all_systems:
             for day, checked in _time.days.items():
                 if checked and day == weekday:
                     time_on = BritishTime.strptime(_time.time_on, "%H:%M").time()
