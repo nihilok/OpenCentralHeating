@@ -47,7 +47,7 @@ To build the front-end application, cd into the frontend-app directory and insta
 (`yarn install`). Now run `yarn build` (or `npm run build`) to create the production build. You can now serve the build 
 directory that has been created as you wish, for example using Nginx as above.
 
-Your nginx config might look like this:
+Your nginx config (e.g. `/etc/nginx/sites-available/heating`) might look like this:
 ```nginx config
 # React app:
 server {
