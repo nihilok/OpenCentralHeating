@@ -1,304 +1,93 @@
 import * as React from "react";
 import "./heating.css";
 import classNames from "classnames";
-import { Button, Slider, Stack, Switch } from "@mui/material";
-import AcUnitIcon from "@mui/icons-material/AcUnit";
 import { StyledTooltip } from "../Custom/StyledTooltip";
-import { StyledTextField } from "../Custom/StyledTextField";
 import { TEMPERATURE_INTERVAL } from "../../constants/constants";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
-import { checkResponse, checkTimeStringWithinLimit } from "../../lib/helpers";
+import { checkResponse } from "../../lib/helpers";
 import { FullScreenLoader } from "../Loaders/FullScreenLoader";
 import { HelpButton } from "../HelpButton/HelpButton";
 import { FullScreenComponent } from "../Custom/FullScreenComponent";
-import { ProgramArrow } from "./ProgramArrow";
 import { WeatherButton } from "../WeatherButton/WeatherButton";
-import { OpenCloseButton } from "./OpenCloseButton";
-import { useSnackbar } from "notistack";
 import { Barometer } from "../Barometer/Barometer";
 import { TopBar } from "../Custom/TopBar";
-import { CountDown } from "../CountDown";
+import { TimePeriod } from "./TimeBlock";
+import { ProgramOnOffSwitch } from "./ProgramOnOffSwitch";
+
+interface Sensors {
+  temperature: number;
+  pressure: number;
+  humidity: number;
+}
+
+export interface APIResponse {
+  sensor_readings: Sensors;
+  relay_on: boolean;
+  program_on: boolean;
+  target: number;
+}
 
 export function SettingsForm() {
-  interface Override {
-    start?: number;
-    on: boolean;
-  }
-
-  interface Sensors {
-    temperature: number;
-    pressure: number;
-    humidity: number;
-  }
-
-  interface HeatingConfig {
-    target: number;
-    on_1: string;
-    off_1: string;
-    on_2?: string;
-    off_2?: string;
-    program_on?: boolean;
-    advance?: Override;
-  }
-
-  interface APIResponse {
-    indoor_temperature: number;
-    sensor_readings: Sensors;
-    relay_on: boolean;
-    advance: Override;
-    conf?: HeatingConfig;
-  }
-
-  const initialState: HeatingConfig = {
-    target: 20,
-    program_on: true,
-    on_1: "",
-    off_1: "",
-    on_2: "",
-    off_2: "",
-  };
 
   const fetch = useFetchWithToken();
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
-  const row2TimeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
-  const lockRef = React.useRef(true);
-  const firstLoad = React.useRef(true);
-  const [config, setConfig] = React.useState(initialState);
   const [readings, setReadings] = React.useState({
     temperature: 0,
     pressure: 0,
     humidity: 0,
   });
   const [isLoading, setIsLoading] = React.useState(true);
-  const [showSettings, setShowSettings] = React.useState(
-    JSON.parse(localStorage.getItem("showSettings") as string) ?? true
-  );
   const [helpMode, setHelpMode] = React.useState(false);
-  const [row2, setRow2] = React.useState(true);
   const [currentTemp, setCurrentTemp] = React.useState<number>();
   const [relayOn, setRelayOn] = React.useState(false);
-  const [override, setOverride] = React.useState<Override>({
-    on: false,
-  });
+  const [programOn, setProgramOn] = React.useState(false);
+  const [target, setTarget] = React.useState(20);
+  const [systemId, setSystemId] = React.useState(3);
 
-  function handleSliderChange(event: Event, newValue: number | number[]) {
-    setConfig({ ...config, target: newValue as number });
-  }
-
-  const programLabel = {
-    inputProps: {
-      "aria-label": "Switch between timer program and frost stat mode",
-    },
+  const handleSystemChange = () => {
+    if (systemId === 3) setSystemId(4);
+    else setSystemId(3);
   };
 
-  function handleTimeChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setConfig({ ...config, [event.target.name]: event.target.value });
-  }
-
-  const parseConf = React.useCallback((conf: HeatingConfig) => {
-    const { on_1, off_1, on_2, off_2, program_on, target } = conf;
-    if (!on_2 && !off_2) setRow2(false);
-    else setRow2(true);
-    setConfig({
-      on_1,
-      off_1,
-      on_2,
-      off_2,
-      program_on,
-      target,
-    });
+  const parseData = React.useCallback((data: APIResponse) => {
+    checkResponse(data.sensor_readings, setReadings);
+    checkResponse(data.program_on, setProgramOn);
+    checkResponse(data.target, setTarget);
+    checkResponse(data.sensor_readings.temperature, setCurrentTemp);
+    checkResponse(data.relay_on, setRelayOn);
   }, []);
 
-  const parseData = React.useCallback(
-    (data: APIResponse) => {
-      if (data.conf) {
-        parseConf(data.conf);
-      }
-      checkResponse(data.sensor_readings, setReadings);
-      checkResponse(data.advance, setOverride);
-      checkResponse(data.sensor_readings.temperature, setCurrentTemp);
-      checkResponse(data.relay_on, setRelayOn);
-    },
-    [parseConf]
-  );
-
-  const getSettings = React.useCallback(async () => {
-    await fetch("/heating/?conf=true")
-      .then((res) =>
-        res.json().then((data: APIResponse) => {
-          if (res.status !== 200) return console.log(data);
-          lockRef.current = true;
-          parseData(data);
-        })
-      )
-      .finally(() => {
-        setIsLoading(false);
-        firstLoad.current = false;
-      });
-  }, [fetch, parseData]);
-
-  const setSettings = React.useCallback(
-    async (currentState: HeatingConfig) => {
-      await fetch("/heating/", "POST", currentState).then((res) =>
-        res.json().then(async (data) => {
-          if (res.status === 422) {
-            enqueueSnackbar(data.detail[0].msg, { variant: "error" });
-            await fetch("/heating/?conf=true").then((res) =>
-              res.json().then((data) => parseData(data))
-            );
-          } else if (res.status !== 200) console.error(data);
-          else {
-            if (data !== currentState) {
-              lockRef.current = true;
-              parseData(data);
-            }
-          }
-        })
-      );
-    },
-    [enqueueSnackbar, fetch, parseData]
-  );
-
-  const debounce = React.useCallback(
-    (state: HeatingConfig) => {
-      clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>);
-      if ((!config.on_2 && config.off_2) || (config.on_2 && !config.off_2))
-        return;
-      timeoutRef.current = setTimeout(() => {
-        setSettings(state)
-          .catch((error) => console.log(error))
-          .then(() => (lockRef.current = true));
-      }, 600);
-    },
-    [setSettings, config.on_2, config.off_2]
-  );
-
-  async function handleOverride() {
-    if (override.on) {
-      return await fetch("/heating/cancel/").then((res) =>
-        res.json().then((data) => {
-          setOverride({ on: data.on });
-          setRelayOn(data.relay);
-        })
-      );
-    }
-    await fetch("/heating/advance/60/").then((res) =>
-      res.json().then((data) => {
+  const getInfo = React.useCallback(async () => {
+    fetch(`/v2/heating?system_id=${systemId}`).then((res) =>
+      res.json().then((data: APIResponse) => {
         if (res.status !== 200) {
           console.log(data);
           return;
         }
-        setOverride({
-          on: true,
-          start: data.start,
-        });
-        setRelayOn(data.relay);
-      })
+        parseData(data);
+      }).finally(()=>setIsLoading(false))
     );
-  }
-
-  const withinLimit1: boolean =
-    !!config.program_on &&
-    checkTimeStringWithinLimit(config.on_1, config.off_1);
-
-  const withinLimit2: boolean = config.on_2
-    ? !!config.program_on &&
-      checkTimeStringWithinLimit(config.on_2 as string, config.off_2 as string)
-    : false;
-
-  const overrideDisabled = () => {
-    switch (true) {
-      case !config.program_on:
-        return false;
-      case withinLimit1:
-        return true;
-      case withinLimit2:
-        return true;
-      default:
-        return false;
-    }
-  };
-
-  async function programOnOff() {
-    await fetch("/heating/on_off/").then((res) =>
-      res.json().then((data) => {
-        if (res.status !== 200) return console.log(data);
-        lockRef.current = true;
-        parseConf(data.conf);
-      })
-    );
-  }
-
-  function handleProgramChange(event: React.ChangeEvent<HTMLInputElement>) {
-    lockRef.current = true;
-    setConfig({ ...config, program_on: event.target.checked });
-    programOnOff().catch((error) => console.log(error));
-  }
-
-  function toggleSettings() {
-    localStorage.setItem("showSettings", JSON.stringify(!showSettings));
-    setShowSettings(!showSettings);
-  }
+  }, [fetch, parseData, systemId]);
 
   React.useEffect(() => {
-    getSettings().catch((error) => console.log(error));
-    firstLoad.current = false;
-  }, [getSettings]);
+    getInfo().catch((error) => console.log(error));
+  }, [systemId, getInfo]);
 
   React.useEffect(() => {
-    if (firstLoad.current) return;
-    if (lockRef.current) {
-      lockRef.current = false;
-      return;
-    }
-    debounce(config);
-    return () => {
-      clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>);
-    };
-  }, [debounce, config]);
-
-  React.useEffect(() => {
-    function getInfo() {
-      fetch("/heating/").then((res) =>
-        res.json().then((data: APIResponse) => {
-          if (res.status !== 200) {
-            console.log(data);
-            return;
-          }
-          parseData(data);
-        })
-      );
-    }
     let interval = setInterval(getInfo, TEMPERATURE_INTERVAL);
     return () => clearInterval(interval);
-  }, [fetch, parseData]);
+  }, [fetch, parseData, getInfo]);
 
-  const setRow2Null = () => {
-    row2TimeoutRef.current = setTimeout(() => {
-      lockRef.current = false;
-      setConfig((p) => ({
-        ...p,
-        on_2: undefined,
-        off_2: undefined,
-      }));
-      closeSnackbar();
-    }, 4000);
-  };
+  const [, setTimePeriods] = React.useState<TimePeriod[]>();
 
-  const handleHideRow = () => {
-    enqueueSnackbar("Second period removed", {
-      action: <Button onClick={undoHideRow}>Undo</Button>,
-    });
-    setRow2(false);
-    setRow2Null();
-  };
-
-  const undoHideRow = () => {
-    clearTimeout(row2TimeoutRef.current as ReturnType<typeof setTimeout>);
-    setRow2(true);
-    closeSnackbar();
-  };
+  React.useEffect(() => {
+    fetch("/v2/heating/times").then((res) =>
+      res.json().then((data: TimePeriod[]) => {
+        if (res.status === 200) {
+          setTimePeriods(data);
+        }
+      })
+    );
+  }, [fetch]);
 
   return (
     <FullScreenComponent>
@@ -310,253 +99,42 @@ export function SettingsForm() {
         {isLoading ? (
           <FullScreenLoader />
         ) : (
-          <div className="flex flex-col space-evenly">
-            {/*<h1 className="title">Open Heating</h1>*/}
-            {currentTemp && (
-              <StyledTooltip
-                title={`Indoor Temperature. Relay is currently ${
-                  relayOn ? "on" : "off"
-                }`}
-                placement="top"
-                disabled={!helpMode}
-              >
-                <h1
-                  className={classNames("TempDisplay", {
-                    TempDisplay__On: relayOn,
-                  })}
-                >
-                  {readings.temperature.toFixed(1)}&deg;C
-                </h1>
-              </StyledTooltip>
-            )}
-            {!showSettings ? (
-              <Barometer readings={readings} />
-            ) : (
-              <>
-                <Stack
-                  spacing={2}
-                  direction="row"
-                  sx={{ mb: 1 }}
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <h2>Target:</h2>
+          <>
+            <button type="button" onClick={handleSystemChange}>
+              {systemId === 3 ? "Upstairs:" : "Downstairs:"}
+            </button>
+            <div className="flex flex-col space-evenly">
+              <div>
+                <p>Target: {target}&deg;C</p>
+                {currentTemp && (
                   <StyledTooltip
-                    title="Desired internal temperature"
-                    placement="bottom"
+                    title={`Indoor Temperature. Relay is currently ${
+                      relayOn ? "on" : "off"
+                    }`}
+                    placement="top"
                     disabled={!helpMode}
                   >
-                    <Slider
-                      aria-label="Target Temperature"
-                      value={config.target}
-                      onChange={handleSliderChange}
-                      min={10}
-                      max={28}
-                    />
-                  </StyledTooltip>
-                  <h2>{config.target}&deg;C</h2>
-                </Stack>
-                <section className={"time-grid"}>
-                  <div />
-                  <StyledTextField
-                    label={`On${row2 ? " 1" : ""}`}
-                    name="on_1"
-                    type="time"
-                    value={config.on_1}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    required={true}
-                    onChange={handleTimeChange}
-                    disabled={!config.program_on}
-                  />
-                  <span>
-                    <ProgramArrow
-                      programOn={config.program_on as boolean}
-                      withinLimit={withinLimit1}
-                    />
-                    <ProgramArrow
-                      programOn={config.program_on as boolean}
-                      withinLimit={withinLimit1}
-                    />
-                    <ProgramArrow
-                      programOn={config.program_on as boolean}
-                      withinLimit={withinLimit1}
-                    />
-                  </span>
-                  <StyledTextField
-                    label={`Off${row2 ? " 1" : ""}`}
-                    name="off_1"
-                    type="time"
-                    value={config.off_1}
-                    required={true}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    onChange={handleTimeChange}
-                    disabled={!config.program_on}
-                  />
-                  {row2 ? (
-                    <div />
-                  ) : (
-                    config.program_on && (
-                      <OpenCloseButton
-                        open={true}
-                        callback={() => {
-                          clearTimeout(
-                            row2TimeoutRef.current as ReturnType<
-                              typeof setTimeout
-                            >
-                          );
-                          setRow2(true);
-                        }}
-                      />
-                    )
-                  )}
-                </section>
-                {row2 ? (
-                  <section className={"time-grid"} id={"row-2"}>
-                    <div />
-                    <StyledTextField
-                      label="On 2"
-                      name="on_2"
-                      type="time"
-                      required={true}
-                      value={config.on_2 || ""}
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                      onChange={handleTimeChange}
-                      disabled={!config.program_on}
-                    />
-                    <span>
-                      <ProgramArrow
-                        programOn={config.program_on as boolean}
-                        withinLimit={withinLimit2}
-                      />
-                      <ProgramArrow
-                        programOn={config.program_on as boolean}
-                        withinLimit={withinLimit2}
-                      />
-                      <ProgramArrow
-                        programOn={config.program_on as boolean}
-                        withinLimit={withinLimit2}
-                      />
-                    </span>
-                    <StyledTextField
-                      label="Off 2"
-                      type="time"
-                      name="off_2"
-                      required={true}
-                      value={config.off_2 || ""}
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                      onChange={handleTimeChange}
-                      disabled={!config.program_on}
-                    />
-                    {config.program_on && (
-                      <OpenCloseButton open={false} callback={handleHideRow} />
-                    )}{" "}
-                  </section>
-                ) : (
-                  <div />
-                )}
-                <StyledTooltip
-                  title="Frost stat mode when off (5&deg;C)"
-                  placement="top"
-                  disabled={!helpMode}
-                >
-                  <Stack
-                    spacing={2}
-                    direction="row"
-                    sx={{ mb: 1 }}
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <h2>Program:</h2>
-                    <Switch
-                      {...programLabel}
-                      onChange={handleProgramChange}
-                      checked={config.program_on}
-                    />
-                    <h2>
-                      {config.program_on ? (
-                        "On"
-                      ) : (
-                        <div className="flex">
-                          {"Off "}
-                          <AcUnitIcon
-                            style={{ marginTop: "2px", display: "block" }}
-                          />
-                        </div>
-                      )}
-                    </h2>
-                  </Stack>
-                </StyledTooltip>
-                <Stack
-                  spacing={2}
-                  direction="column"
-                  sx={{ mb: 4 }}
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Stack
-                    spacing={2}
-                    direction="row"
-                    sx={{ mb: 0 }}
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <StyledTooltip
-                      title={`${
-                        override.on ? "Cancel" : "Run"
-                      } thermostat control${!override.on ? " for 1 hour" : ""}`}
-                      placement="top"
-                      disabled={!helpMode}
+                    <h1
+                      className={classNames("TempDisplay", {
+                        TempDisplay__On: relayOn,
+                      })}
                     >
-                      <span>
-                        <Button
-                          variant={
-                            override.on && !overrideDisabled()
-                              ? "contained"
-                              : "outlined"
-                          }
-                          disabled={overrideDisabled()}
-                          onClick={handleOverride}
-                        >
-                          {override.on && !overrideDisabled()
-                            ? "Cancel Override"
-                            : "1hr Override"}
-                        </Button>
-                      </span>
-                    </StyledTooltip>
-                  </Stack>
-                  {override.start && !overrideDisabled() ? (
-                    <p className="text-muted">
-                      {<CountDown endTime={override.start + 3600} />}
-                    </p>
-                  ) : (
-                    <p style={{ opacity: 0 }}>Override Off</p>
-                  )}
-                </Stack>
-              </>
-            )}
-            <Button
-              sx={{
-                width: "max-content",
-                mx: "auto",
-                fontSize: ".75rem",
-                py: 0,
-                pt: 0.5,
-              }}
-              onClick={toggleSettings}
-            >
-              {showSettings ? "Hide" : "Show"} Settings
-            </Button>
-          </div>
+                      {readings.temperature.toFixed(1)}&deg;C
+                    </h1>
+                  </StyledTooltip>
+                )}
+              </div>
+              <Barometer readings={readings} />
+            </div>
+          </>
         )}
       </form>
+      <ProgramOnOffSwitch
+        helpMode={helpMode}
+        state={programOn}
+        systemId={systemId}
+        parseResponse={parseData}
+      />
     </FullScreenComponent>
   );
 }

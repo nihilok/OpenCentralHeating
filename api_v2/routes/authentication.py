@@ -92,9 +92,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = await HouseholdMemberPydantic.from_queryset_single(
-        HouseholdMember.get(name=token_data.username)
-    )
+    user = await HouseholdMember.get(name=token_data.username)
     if user is None:
         raise credentials_exception
     return user

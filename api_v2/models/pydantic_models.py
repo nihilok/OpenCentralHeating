@@ -1,12 +1,12 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel
 from pydantic.class_validators import root_validator
-
-from . import Household, HouseholdMember, HeatingPeriod
 from tortoise.contrib.pydantic import pydantic_model_creator
 
+from .authentication import Household, HouseholdMember
+from .heating import HeatingPeriod, HeatingSystemModel
 
 HouseholdPydantic = pydantic_model_creator(Household, name="Household")
 HouseholdPydanticIn = pydantic_model_creator(
@@ -27,20 +27,21 @@ class PasswordChange(BaseModel):
 
 
 class Days(BaseModel):
-    monday: bool = False
-    tuesday: bool = False
-    wednesday: bool = False
-    thursday: bool = False
-    friday: bool = False
-    saturday: bool = False
-    sunday: bool = False
+    monday: bool = True
+    tuesday: bool = True
+    wednesday: bool = True
+    thursday: bool = True
+    friday: bool = True
+    saturday: bool = True
+    sunday: bool = True
 
 
-class HeatingPeriodModel(BaseModel):
+class PHeatingPeriod(BaseModel):
     time_on: str
     time_off: str
     days: Days
     target: int
+    heating_system_id: int
 
     @root_validator
     def check_order(cls, v):
@@ -52,6 +53,13 @@ class HeatingPeriodModel(BaseModel):
 
 
 HeatingPeriodModelCreator = pydantic_model_creator(HeatingPeriod, name='HeatingPeriod')
+HeatingSystemModelCreator = pydantic_model_creator(HeatingSystemModel, name='HeatingSystem')
+
+
+class PHeatingSystemIn(BaseModel):
+    sensor_url: str
+    raspberry_pi: Optional[str] = None
+    gpio_pin: int
 
 
 class Advance(BaseModel):
@@ -61,49 +69,9 @@ class Advance(BaseModel):
 
 
 class HeatingConf(BaseModel):
-    on_1: str
-    off_1: str
-    on_2: Optional[str] = None
-    off_2: Optional[str] = None
-    target: int = 20
+    target: Optional[int] = None
     program_on: bool = True
     advance: Optional[Advance] = None
-
-    @staticmethod
-    def parse_time(time_: Optional[str] = None) -> Optional[datetime.time]:
-        if time_ is not None:
-            return datetime.strptime(time_, "%H:%M").time()
-
-    @root_validator
-    def check_pairs(cls, values):
-        if not values.get('on_1') and values.get('off_1'):
-            raise ValueError('On 1 missing')
-        if values.get('on_1') and not values.get('off_1'):
-            raise ValueError('Off 1 missing')
-        if not values.get('on_2') and values.get('off_2'):
-            raise ValueError('On 2 missing')
-        if values.get('on_2') and not values.get('off_2'):
-            raise ValueError('Off 2 missing')
-        return values
-
-    @root_validator
-    def order_of_times(cls, values):
-        on_1, off_1, on_2, off_2 = (
-            values.get("on_1"),
-            values.get("off_1"),
-            values.get("on_2"),
-            values.get("off_2"),
-        )
-        if cls.parse_time(on_1) >= cls.parse_time(off_1):
-            raise ValueError("On 1 cannot be after Off 1")
-        elif on_2:
-            if cls.parse_time(on_1) >= cls.parse_time(on_2):
-                raise ValueError("On 1 cannot be after On 2")
-            if cls.parse_time(off_1) > cls.parse_time(on_2):
-                raise ValueError("Off 1 cannot be after On 2")
-            if cls.parse_time(on_2) >= cls.parse_time(off_2):
-                raise ValueError("On 2 cannot be after Off 2")
-        return values
 
 
 class SensorReadings(BaseModel):
@@ -113,7 +81,6 @@ class SensorReadings(BaseModel):
 
 
 class HeatingInfo(BaseModel):
-    indoor_temperature: float
     sensor_readings: SensorReadings
     relay_on: bool
     advance: Optional[Advance] = None
@@ -122,3 +89,19 @@ class HeatingInfo(BaseModel):
 
 class ConfResponse(BaseModel):
     conf: HeatingConf
+
+
+class SystemInfo(BaseModel):
+    sensor_readings: SensorReadings
+    relay_on: bool
+    program_on: bool
+    target: float
+
+
+class ProgramOnlyResponse(BaseModel):
+    program_on: bool
+    relay_on: bool
+
+
+class HeatingV2Response(BaseModel):
+    systems: List[SystemInfo] = []

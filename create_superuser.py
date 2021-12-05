@@ -1,9 +1,9 @@
-import json
-import sqlite3
 import configparser
+import json
 import os
-from pathlib import Path
+import sqlite3
 from getpass import getpass
+from pathlib import Path
 
 from passlib.context import CryptContext
 
@@ -13,7 +13,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 config = configparser.ConfigParser()
 path = Path(__file__)
 ROOT_DIR = path.parent.absolute()
-config_path = os.path.join(ROOT_DIR, "api/secrets/secrets.ini")
+config_path = os.path.join(ROOT_DIR, "api_v2/secrets/secrets.ini")
 config.read(config_path)
 
 
@@ -51,7 +51,7 @@ def create_superuser(household: int = 1):
     superuser_id = curs.lastrowid
     conn.close()
     superuser_conf = config['SUPERUSERS']
-    if superuser_conf['superuser_list']:
+    if superuser_conf.get('superuser_list'):
         superusers = json.loads(superuser_conf['superuser_list'])
         superusers.append(superuser_id)
     else:

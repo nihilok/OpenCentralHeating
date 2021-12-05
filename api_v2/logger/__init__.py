@@ -15,7 +15,7 @@ def get_logger(name=__name__):
         fh.setLevel(logging.INFO)
         fh.setFormatter(formatter)
         logger.addHandler(fh)
-    except:
+    except Exception:
         pass
 
     ch = logging.StreamHandler()
