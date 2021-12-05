@@ -1,6 +1,6 @@
 import calendar
 
-from api_v2.heating.custom_datetimes import BritishTime
+from api_v2.utils import BritishTime
 from api_v2.models import PHeatingPeriod, HeatingPeriod, HeatingPeriodModelCreator
 
 

@@ -6,10 +6,9 @@ from typing import Optional
 import pigpio
 import requests
 
-from .custom_datetimes import BritishTime
 from .fake_pi import fake_pi
 from .manage_times import _check_times, get_times
-from ..utils import send_telegram_message
+from ..utils import send_telegram_message, BritishTime
 from ..logger import get_logger
 from ..secrets import initialized_config as config
 
