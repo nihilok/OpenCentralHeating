@@ -1,46 +1,21 @@
 import json
-import asyncio
-import aioredis
+
+from .cache import RedisCache, cache_singleton
 
 
-async def main():
-    return await aioredis.create_redis_pool('redis://localhost')
-
-
-loop = asyncio.get_running_loop()
-task = loop.create_task(main())
-
-
-def set_cache(cache_obj):
-    global cache
-    cache = cache_obj
-
-
-task.add_done_callback(lambda t: set_cache(t.result()))
-
-
-async def set_item(key, value):
-    await cache.set(key, value)
-
-
-async def get_item(key):
-    return await cache.get(key, encoding='utf-8')
-
-
-async def get_keys():
-    return await cache.keys('*', encoding='utf-8')
-
-
-async def delete_key(key):
-    await cache.delete(key)
-
+async def check_create_cache():
+    if cache_singleton is None:
+        global cache
+        cache = RedisCache()
 
 
 async def set_weather(weather_dict: dict):
+    await check_create_cache()
     await cache.execute('set', 'weather', json.dumps(weather_dict), 'ex', 900)
 
 
 async def get_weather():
-    w = await get_item('weather')
+    await check_create_cache()
+    w = await cache.get_item('weather')
     if w:
         return json.loads(w)

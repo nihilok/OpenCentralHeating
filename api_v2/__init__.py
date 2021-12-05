@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from tortoise import Tortoise
 from fastapi.middleware.cors import CORSMiddleware
 from . import settings
+from .cache import RedisCache
+from .cache.cache import init_cache
 from .heating.heating_system import HeatingSystem
 from .heating.systems_in_memory import systems_in_memory
 from .models import HeatingSystemModel
@@ -44,6 +46,7 @@ async def init_heating_systems():
 @app.on_event("startup")
 async def run_init():
     await init_db()
+    await init_cache()
     await init_heating_systems()
 
 
