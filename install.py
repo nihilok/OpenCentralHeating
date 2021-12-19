@@ -96,7 +96,7 @@ else:
 
 conn = sqlite3.connect("db.sqlite3")
 c = conn.cursor()
-if not len(list((c.execute("SELECT * FROM householdmember where id=1")))):
+if not len(list((c.execute("SELECT * FROM household_member where id=1")))):
     print("=====================================================")
     print("Please create a superuser...", end="\n\n")
     subprocess.run([f"{LOCAL_DIR}/env/bin/python", "./scripts/create_superuser.py"])
