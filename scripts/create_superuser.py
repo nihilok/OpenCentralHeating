@@ -13,7 +13,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 config = configparser.ConfigParser()
 path = Path(__file__)
 ROOT_DIR = path.parent.absolute()
-config_path = os.path.join(ROOT_DIR, "api_v2/secrets/secrets.ini")
+config_path = os.path.join(ROOT_DIR, "../api_v2/secrets/secrets.ini")
 config.read(config_path)
 
 
@@ -22,7 +22,7 @@ def get_password_hash(password):
 
 
 def check_for_first_household():
-    conn = sqlite3.connect("db.sqlite3")
+    conn = sqlite3.connect("../db.sqlite3")
     curs = conn.cursor()
     q = curs.execute("SELECT * FROM household")
     if not len(list(q)):
@@ -41,7 +41,7 @@ def create_superuser(household: int = 1):
         return create_superuser()
     password = get_password_hash(password)
     del confirm_password
-    conn = sqlite3.connect("db.sqlite3")
+    conn = sqlite3.connect("../db.sqlite3")
     curs = conn.cursor()
     vals = f'("{name}", "{password}", {household})'
     curs.execute(

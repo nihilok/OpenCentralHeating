@@ -99,7 +99,7 @@ c = conn.cursor()
 if not len(list((c.execute("SELECT * FROM householdmember where id=1")))):
     print("=====================================================")
     print("Please create a superuser...", end="\n\n")
-    subprocess.run([f"{LOCAL_DIR}/env/bin/python", "create_superuser.py"])
+    subprocess.run([f"{LOCAL_DIR}/env/bin/python", "./scripts/create_superuser.py"])
 else:
     print("Superuser already exists")
 conn.close()
@@ -122,5 +122,6 @@ def setup_heating():
     if raspberry_pi_ip or temperature_url:
         with open(config_path, 'w') as f:
             config.write(f)
+
 
 setup_heating()
