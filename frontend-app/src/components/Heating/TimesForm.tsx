@@ -4,7 +4,7 @@ import { BackButton } from "../IconButtons/BackButton";
 import { TimeBlock, TimePeriod } from "./TimeBlock";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
 import { FullScreenComponent } from "../Custom/FullScreenComponent";
-import { Button } from "@mui/material";
+// import { Button } from "@mui/material";
 
 interface Props {}
 
@@ -28,7 +28,6 @@ export function TimesForm(props: Props) {
               systemsArr.push(system_id as number);
             }
           });
-          console.log(systemsArr);
           setAllSystems(systemsArr);
           setTimePeriods(data.periods);
         }
@@ -51,15 +50,15 @@ export function TimesForm(props: Props) {
             ))
         )}
       </div>
-      <div>
-        <Button
-          onClick={() => alert("New Timeblock!")}
-          variant={"contained"}
-          color={"primary"}
-        >
-          New
-        </Button>
-      </div>
+      {/*<div>*/}
+      {/*  <Button*/}
+      {/*    onClick={() => prompt("New Timeblock!")}*/}
+      {/*    variant={"contained"}*/}
+      {/*    color={"primary"}*/}
+      {/*  >*/}
+      {/*    New*/}
+      {/*  </Button>*/}
+      {/*</div>*/}
     </FullScreenComponent>
   );
 }

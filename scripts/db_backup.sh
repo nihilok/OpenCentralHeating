@@ -19,8 +19,8 @@ BACKUP_RETAIN_DAYS=30 ## Number of days to keep local backup copy
 
 #################################################################
 
-cd /home/$USER/apps/OpenCentralHeating;
-mkdir -p ${DB_BACKUP_PATH}/${TODAY}
+cd "/home/$USER/apps/OpenCentralHeating" || exit;
+mkdir -p "${DB_BACKUP_PATH}/${TODAY}"
 echo "Backup started for database - ${DATABASE_NAME}"
 sqlite3 db.sqlite3 ".backup ${DB_BACKUP_PATH}/${TODAY}/backup.sqlite3"
 if [ $? -eq 0 ]; then
@@ -32,12 +32,12 @@ fi
 
 ##### Remove backups older than {BACKUP_RETAIN_DAYS} days #####
 
-DBDELDATE=$(date +"%d%b%Y" --date="${BACKUP_RETAIN_DAYS} days ago")
+DB_DEL_DATE=$(date +"%d%b%Y" --date="${BACKUP_RETAIN_DAYS} days ago")
 
 if [ -n "${DB_BACKUP_PATH}" ];
   then cd ${DB_BACKUP_PATH} || exit;
-  if [ -n "${DBDELDATE}" ] && [ -d "${DBDELDATE}" ];
-    then rm -rf "${DBDELDATE}"
+  if [ -n "${DB_DEL_DATE}" ] && [ -d "${DB_DEL_DATE}" ];
+    then rm -rf "${DB_DEL_DATE}"
   fi
 fi
 

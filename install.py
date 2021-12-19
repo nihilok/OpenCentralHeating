@@ -12,7 +12,8 @@ config = configparser.ConfigParser()
 path = Path(__file__)
 ROOT_DIR = path.parent.absolute()
 print(ROOT_DIR)
-config_path = os.path.join(ROOT_DIR, "api/secrets/secrets.ini")
+config_path = os.path.join(ROOT_DIR, "api_v2/secrets/secrets.ini")
+run_script_path = os.path.join(ROOT_DIR, "run.sh")
 config.read(config_path)
 
 LOG_DIR = "/var/log/heating"
@@ -42,15 +43,15 @@ except FileExistsError:
     print("WARNING: Log directory already exists")
 
 os.chdir(LOCAL_DIR)
-with open("run.sh", "w") as f:
+with open(run_script_path, "w") as f:
     f.write(
-        """#!/usr/bin/env bash
-source env/bin/activate
-python main.py"""
+        f"""#!/usr/bin/env bash
+source {ROOT_DIR}/env/bin/activate
+python {ROOT_DIR}/main.py"""
     )
-os.chmod("run.sh", 0o755)
-os.chown("run.sh", UID, UID)
-subprocess.run(["ln", "run.sh", "/usr/local/bin/open-heating"])
+os.chmod(run_script_path, 0o755)
+os.chown(run_script_path, UID, UID)
+subprocess.run(["ln", run_script_path, "/usr/local/bin/open-heating"])
 
 os.setuid(UID)
 
@@ -96,10 +97,10 @@ else:
 
 conn = sqlite3.connect("db.sqlite3")
 c = conn.cursor()
-if not len(list((c.execute("SELECT * FROM householdmember where id=1")))):
+if not len(list((c.execute("SELECT * FROM household_member where id=1")))):
     print("=====================================================")
     print("Please create a superuser...", end="\n\n")
-    subprocess.run([f"{LOCAL_DIR}/env/bin/python", "create_superuser.py"])
+    subprocess.run([f"{LOCAL_DIR}/env/bin/python", "./scripts/create_superuser.py"])
 else:
     print("Superuser already exists")
 conn.close()
@@ -116,11 +117,12 @@ def setup_heating():
         "(192.168.1.11 | leave blank if current machine is same raspberry pi)\n$:"
     )
     if temperature_url:
-        config['HEATING']['temperature_url'] = temperature_url
+        config["HEATING"]["temperature_url"] = temperature_url
     if raspberry_pi_ip:
-        config['HEATING']['raspberry_pi_ip'] = raspberry_pi_ip
+        config["HEATING"]["raspberry_pi_ip"] = raspberry_pi_ip
     if raspberry_pi_ip or temperature_url:
-        with open(config_path, 'w') as f:
+        with open(config_path, "w") as f:
             config.write(f)
+
 
 setup_heating()
