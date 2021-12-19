@@ -91,6 +91,20 @@ export function TimeBlock({ timePeriod }: Props) {
     setState((prev) => ({ ...prev, target: newValue as number }));
   }
 
+  const withinLimit = () => {
+    const currentDate = new Date();
+
+    const startDate = new Date(currentDate.getTime());
+    startDate.setHours(parseInt(state.time_on.split(":")[0]));
+    startDate.setMinutes(parseInt(state.time_on.split(":")[1]));
+
+    const endDate = new Date(currentDate.getTime());
+    endDate.setHours(parseInt(state.time_off.split(":")[0]));
+    endDate.setMinutes(parseInt(state.time_off.split(":")[1]));
+
+    return startDate < currentDate && endDate > currentDate
+  };
+
   React.useEffect(() => {
     if (!lock.current) debounce(state);
     if (first.current) {
@@ -137,9 +151,9 @@ export function TimeBlock({ timePeriod }: Props) {
             onChange={handleTimeChange}
           />
           <span>
-            <ProgramArrow programOn={true} withinLimit={true} />
-            <ProgramArrow programOn={true} withinLimit={true} />
-            <ProgramArrow programOn={true} withinLimit={true} />
+            <ProgramArrow programOn={true} withinLimit={withinLimit()} />
+            <ProgramArrow programOn={true} withinLimit={withinLimit()} />
+            <ProgramArrow programOn={true} withinLimit={withinLimit()} />
           </span>
           <StyledTextField
             label="Off"
