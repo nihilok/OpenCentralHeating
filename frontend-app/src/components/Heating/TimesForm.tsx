@@ -4,6 +4,7 @@ import { BackButton } from "../IconButtons/BackButton";
 import {TimeBlock, TimePeriod} from "./TimeBlock";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
 import {FullScreenComponent} from "../Custom/FullScreenComponent";
+import {Button} from "@mui/material";
 
 interface Props {}
 
@@ -45,6 +46,9 @@ export function TimesForm(props: Props) {
         timePeriods.filter(period => period.heating_system_id === id).map((timePeriod: TimePeriod) => (
         <TimeBlock timePeriod={timePeriod}/>
       ))))}
+      </div>
+      <div>
+        <Button onClick={()=>alert('New Timeblock!')} variant={"contained"} color={"primary"}>New</Button>
       </div>
     </FullScreenComponent>
   );

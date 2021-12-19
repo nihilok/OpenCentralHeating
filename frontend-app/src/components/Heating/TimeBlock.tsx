@@ -3,6 +3,7 @@ import { useFetchWithToken } from "../../hooks/FetchWithToken";
 import { StyledTextField } from "../Custom/StyledTextField";
 import { ProgramArrow } from "./ProgramArrow";
 import { Slider, Stack } from "@mui/material";
+import { systemNames } from "../../constants/systems";
 
 export interface TimePeriod {
   time_on: string;
@@ -101,7 +102,9 @@ export function TimeBlock({ timePeriod }: Props) {
 
   return (
     <div className={"container time-block"}>
-      <p className="text-muted no-margin">System ID: {state.heating_system_id}</p>
+      <p className="text-muted no-margin">
+        {systemNames[state.heating_system_id]}
+      </p>
       <Stack
         spacing={2}
         direction="row"
