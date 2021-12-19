@@ -37,7 +37,7 @@ def create_superuser(household: int = 1):
     password = getpass("password: ")
     confirm_password = getpass("confirm_password: ")
     if password != confirm_password:
-        print('**PASSWORDS DO NOT MATCH, please try again**')
+        print("**PASSWORDS DO NOT MATCH, please try again**")
         return create_superuser()
     password = get_password_hash(password)
     del confirm_password
@@ -50,14 +50,14 @@ def create_superuser(household: int = 1):
     conn.commit()
     superuser_id = curs.lastrowid
     conn.close()
-    superuser_conf = config['SUPERUSERS']
-    if superuser_conf.get('superuser_list'):
-        superusers = json.loads(superuser_conf['superuser_list'])
+    superuser_conf = config["SUPERUSERS"]
+    if superuser_conf.get("superuser_list"):
+        superusers = json.loads(superuser_conf["superuser_list"])
         superusers.append(superuser_id)
     else:
         superusers = [superuser_id]
-    superuser_conf['superuser_list'] = json.dumps(superusers)
-    with open(config_path, 'w') as f:
+    superuser_conf["superuser_list"] = json.dumps(superusers)
+    with open(config_path, "w") as f:
         config.write(f)
 
 
