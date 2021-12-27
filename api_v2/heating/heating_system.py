@@ -62,6 +62,7 @@ class HeatingSystem:
             req = requests.get(self.temperature_url)
             if req.status_code == 200 and any(self.error):
                 self.error = [False, False]
+                send_telegram_message(f"Contact with {self.temperature_url} resumed")
             self.measurements = req.json()
         except Exception as e:
             if not self.error[0]:
@@ -116,11 +117,18 @@ class HeatingSystem:
             logger.debug("Switching off relay")
             self.pi.write(self.gpio_pin, 1 if self.PIN_STATE_ON == 0 else 0)
 
-    async def thermostat_control(self):
+    def handle_errors(self):
         if any(self.error):
-            logger.warning('Switching off relay due to error reading from temperature sensor '
-                           f'(Error state: {self.error})')
-            self.switch_off_relay()
+            if self.relay_state:
+                logger.warning(
+                    "Switching off relay due to error reading from temperature sensor "
+                    f"(Error state: {self.error})"
+                )
+                self.switch_off_relay()
+            return True
+
+    async def thermostat_control(self):
+        if self.handle_errors():
             return
         check = self.too_cold
         if check is True:
