@@ -10,7 +10,6 @@ import { FullScreenComponent } from "../Custom/FullScreenComponent";
 import { WeatherButton } from "../WeatherButton/WeatherButton";
 import { Barometer } from "../Barometer/Barometer";
 import { TopBar } from "../Custom/TopBar";
-import { TimePeriod } from "./TimeBlock";
 import { ProgramOnOffSwitch } from "./ProgramOnOffSwitch";
 import {SettingsButton} from "../IconButtons/SettingsButton";
 
@@ -41,11 +40,17 @@ export function SettingsForm() {
   const [relayOn, setRelayOn] = React.useState(false);
   const [programOn, setProgramOn] = React.useState(false);
   const [target, setTarget] = React.useState(20);
-  const [systemId, setSystemId] = React.useState(3);
+  const [systemId, setSystemId] = React.useState(parseInt(localStorage.getItem('currentSystem') as string) || 3);
 
   const handleSystemChange = () => {
-    if (systemId === 3) setSystemId(4);
-    else setSystemId(3);
+    if (systemId === 3) {
+      localStorage.setItem('currentSystem', '4')
+      setSystemId(4);
+    }
+    else {
+      localStorage.setItem('currentSystem', '3')
+      setSystemId(3);
+    }
   };
 
   const parseData = React.useCallback((data: APIResponse) => {
