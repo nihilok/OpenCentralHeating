@@ -11,7 +11,9 @@ import { WeatherButton } from "../WeatherButton/WeatherButton";
 import { Barometer } from "../Barometer/Barometer";
 import { TopBar } from "../Custom/TopBar";
 import { ProgramOnOffSwitch } from "./ProgramOnOffSwitch";
-import {SettingsButton} from "../IconButtons/SettingsButton";
+import { SettingsButton } from "../IconButtons/SettingsButton";
+import SwapVertIcon from "@mui/icons-material/SwapVert";
+import { Button } from "@mui/material";
 
 interface Sensors {
   temperature: number;
@@ -27,7 +29,6 @@ export interface APIResponse {
 }
 
 export function SettingsForm() {
-
   const fetch = useFetchWithToken();
   const [readings, setReadings] = React.useState({
     temperature: 0,
@@ -40,15 +41,16 @@ export function SettingsForm() {
   const [relayOn, setRelayOn] = React.useState(false);
   const [programOn, setProgramOn] = React.useState(false);
   const [target, setTarget] = React.useState(20);
-  const [systemId, setSystemId] = React.useState(parseInt(localStorage.getItem('currentSystem') as string) || 3);
+  const [systemId, setSystemId] = React.useState(
+    parseInt(localStorage.getItem("currentSystem") as string) || 3
+  );
 
   const handleSystemChange = () => {
     if (systemId === 3) {
-      localStorage.setItem('currentSystem', '4')
+      localStorage.setItem("currentSystem", "4");
       setSystemId(4);
-    }
-    else {
-      localStorage.setItem('currentSystem', '3')
+    } else {
+      localStorage.setItem("currentSystem", "3");
       setSystemId(3);
     }
   };
@@ -63,13 +65,16 @@ export function SettingsForm() {
 
   const getInfo = React.useCallback(async () => {
     fetch(`/v2/heating?system_id=${systemId}`).then((res) =>
-      res.json().then((data: APIResponse) => {
-        if (res.status !== 200) {
-          console.log(data);
-          return;
-        }
-        parseData(data);
-      }).finally(()=>setIsLoading(false))
+      res
+        .json()
+        .then((data: APIResponse) => {
+          if (res.status !== 200) {
+            console.log(data);
+            return;
+          }
+          parseData(data);
+        })
+        .finally(() => setIsLoading(false))
     );
   }, [fetch, parseData, systemId]);
 
@@ -93,10 +98,22 @@ export function SettingsForm() {
           <FullScreenLoader />
         ) : (
           <>
-            <button type="button" onClick={handleSystemChange}>
-              {systemId === 3 ? "Upstairs:" : "Downstairs:"}
-            </button>
             <div className="flex flex-col space-evenly">
+              <Button
+                variant='outlined'
+                color='primary'
+                type="button"
+                onClick={handleSystemChange}
+                style={{
+                  cursor: "pointer",
+                  width: 'max-content',
+                  paddingLeft: '1.5rem',
+                  margin: 'auto',
+                }}
+              >
+                <SwapVertIcon style={{ marginLeft: "-1rem" }} />
+                {systemId === 3 ? "Upstairs:" : "Downstairs:"}
+              </Button>
               <div>
                 <p>Target: {target}&deg;C</p>
                 {currentTemp && (
