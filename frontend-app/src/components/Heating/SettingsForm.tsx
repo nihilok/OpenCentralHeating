@@ -100,15 +100,15 @@ export function SettingsForm() {
           <>
             <div className="flex flex-col space-evenly">
               <Button
-                variant='outlined'
+                variant='text'
                 color='primary'
                 type="button"
                 onClick={handleSystemChange}
                 style={{
                   cursor: "pointer",
                   width: 'max-content',
-                  paddingLeft: '1.5rem',
                   margin: 'auto',
+                  paddingLeft: '1.25rem',
                 }}
               >
                 <SwapVertIcon style={{ marginLeft: "-1rem" }} />
