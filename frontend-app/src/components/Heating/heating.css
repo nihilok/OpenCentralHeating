@@ -108,3 +108,17 @@
     display: flex;
     flex-wrap: wrap;
 }
+
+.reduced-timeblock {
+    width: 100%;
+    text-align: center;
+    margin-top: 1rem;
+    border-radius: 4px;
+    border-bottom: 1px solid var(--muted);
+    padding-bottom: 1rem;
+}
+
+.reduced-timeblock:first-of-type {
+    border-top: 1px solid var(--muted);
+    padding-top: 1rem;
+}

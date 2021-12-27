@@ -19,8 +19,8 @@ export function BackButton(props: Props) {
     <div>
       <IconButton
         onClick={handleClick}
-        className={"help-button"}
-        aria-label="help"
+        className={"back-button"}
+        aria-label="back"
         component="div"
       >
         <ArrowBack />

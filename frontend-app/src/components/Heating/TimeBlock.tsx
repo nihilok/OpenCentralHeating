@@ -4,6 +4,8 @@ import { StyledTextField } from "../Custom/StyledTextField";
 import { ProgramArrow } from "./ProgramArrow";
 import { Slider, Stack } from "@mui/material";
 import { systemNames } from "../../constants/systems";
+import { ReducedTimeBlock } from "./ReducedTimeBlock";
+import { UnfoldMoreOutlined, UnfoldLessOutlined } from "@mui/icons-material";
 
 export interface TimePeriod {
   time_on: string;
@@ -23,6 +25,7 @@ export function TimeBlock({ timePeriod }: Props) {
   const fetch = useFetchWithToken();
 
   const [state, setState] = React.useState<TimePeriod>(timePeriod);
+  const [expanded, setExpanded] = React.useState<boolean>(false);
   const timeout = React.useRef<Timeout>();
   const lock = React.useRef<boolean>(true);
   const first = React.useRef<boolean>(true);
@@ -91,6 +94,20 @@ export function TimeBlock({ timePeriod }: Props) {
     setState((prev) => ({ ...prev, target: newValue as number }));
   }
 
+  const withinLimit = () => {
+    const currentDate = new Date();
+
+    const startDate = new Date(currentDate.getTime());
+    startDate.setHours(parseInt(state.time_on.split(":")[0]));
+    startDate.setMinutes(parseInt(state.time_on.split(":")[1]));
+
+    const endDate = new Date(currentDate.getTime());
+    endDate.setHours(parseInt(state.time_off.split(":")[0]));
+    endDate.setMinutes(parseInt(state.time_off.split(":")[1]));
+
+    return startDate < currentDate && endDate > currentDate;
+  };
+
   React.useEffect(() => {
     if (!lock.current) debounce(state);
     if (first.current) {
@@ -100,8 +117,20 @@ export function TimeBlock({ timePeriod }: Props) {
     return () => clearTimeout(timeout.current as Timeout);
   }, [debounce, state]);
 
-  return (
+  return !expanded ? (
+    <ReducedTimeBlock timePeriod={timePeriod} setExpanded={setExpanded} />
+  ) : (
     <div className={"container time-block"}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          cursor: "pointer",
+        }}
+        onClick={() => setExpanded(false)}
+      >
+        <UnfoldLessOutlined />
+      </div>
       <p className="text-muted no-margin">
         {systemNames[state.heating_system_id]}
       </p>
@@ -137,9 +166,9 @@ export function TimeBlock({ timePeriod }: Props) {
             onChange={handleTimeChange}
           />
           <span>
-            <ProgramArrow programOn={true} withinLimit={true} />
-            <ProgramArrow programOn={true} withinLimit={true} />
-            <ProgramArrow programOn={true} withinLimit={true} />
+            <ProgramArrow programOn={true} withinLimit={withinLimit()} />
+            <ProgramArrow programOn={true} withinLimit={withinLimit()} />
+            <ProgramArrow programOn={true} withinLimit={withinLimit()} />
           </span>
           <StyledTextField
             label="Off"

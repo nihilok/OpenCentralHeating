@@ -117,6 +117,11 @@ class HeatingSystem:
             self.pi.write(self.gpio_pin, 1 if self.PIN_STATE_ON == 0 else 0)
 
     async def thermostat_control(self):
+        if any(self.error):
+            logger.warning('Switching off relay due to error reading from temperature sensor '
+                           f'(Error state: {self.error})')
+            self.switch_off_relay()
+            return
         check = self.too_cold
         if check is True:
             logger.debug("too cold")
