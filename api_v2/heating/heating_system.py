@@ -7,7 +7,8 @@ import pigpio
 import requests
 
 from .fake_pi import fake_pi
-from .manage_times import check_times, get_times
+from .manage_times import check_times, get_times, new_time
+from ..models import PHeatingPeriod
 from ..utils import send_telegram_message, BritishTime
 from ..logger import get_logger
 from ..secrets import initialized_config as config
@@ -204,3 +205,10 @@ class HeatingSystem:
                 await self.cancel_advance()
             return True
         return False
+
+    async def new_time(self, period: PHeatingPeriod, user_id: int):
+        _time = await new_time(self.household_id, period, user_id)
+        _check = await check_times([_time], self.system_id)
+        if _check:
+            self.current_period = _check
+        return _time

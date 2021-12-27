@@ -93,8 +93,9 @@ async def new_period(
     period: PHeatingPeriod,
     user: HouseholdMember = Depends(get_current_active_user),
 ):
+    hs = await get_system_from_memory_http(period.heating_system_id, user.household_id)
     try:
-        return await new_time(user.household_id, period, user.id)
+        return await hs.new_time(period, user.id)
     except ValueError as e:
         raise HTTPException(422, str(e))
 
@@ -113,9 +114,11 @@ async def update_time(
     period: PHeatingPeriod,
     user: HouseholdMember = Depends(get_current_active_user),
 ):
+    hs = await get_system_from_memory_http(period.heating_system_id, user.household_id)
     p = await HeatingPeriod.get(period_id=period_id)
     p.__dict__.update(**period.dict(exclude_unset=True))
     await p.save()
+    await hs.complex_check_time()
     return PHeatingPeriod(
         **p.__dict__
     )
