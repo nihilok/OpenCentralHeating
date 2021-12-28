@@ -41,6 +41,7 @@ export function TimeBlock({ timePeriod }: Props) {
   const update = React.useCallback(
     async (currentState) => {
       const data = {
+        period_id: currentState.period_id,
         time_on: currentState.time_on,
         time_off: currentState.time_off,
         target: currentState.target,
@@ -57,7 +58,7 @@ export function TimeBlock({ timePeriod }: Props) {
       };
 
       fetch(
-        "/v2/heating/times?period_id=" + currentState.period_id,
+        "/v2/heating/times",
         "PUT",
         data
       )

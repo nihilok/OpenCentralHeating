@@ -110,18 +110,13 @@ async def delete_period(
 
 @router.put("/heating/times")
 async def update_time(
-    period_id: int,
     period: PHeatingPeriod,
     user: HouseholdMember = Depends(get_current_active_user),
 ):
+    p = await update_time(period)
     hs = await get_system_from_memory_http(period.heating_system_id, user.household_id)
-    p = await HeatingPeriod.get(period_id=period_id)
-    p.__dict__.update(**period.dict(exclude_unset=True))
-    await p.save()
     await hs.complex_check_time()
-    return PHeatingPeriod(
-        **p.__dict__
-    )
+    return PHeatingPeriod(**p.__dict__)
 
 
 @router.post("/heating/system")
