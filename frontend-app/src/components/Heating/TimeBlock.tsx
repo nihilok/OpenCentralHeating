@@ -6,6 +6,7 @@ import { Slider, Stack } from "@mui/material";
 import { systemNames } from "../../constants/systems";
 import { ReducedTimeBlock } from "./ReducedTimeBlock";
 import { UnfoldMoreOutlined, UnfoldLessOutlined } from "@mui/icons-material";
+import {useSnackbar} from "notistack";
 
 export interface TimePeriod {
   time_on: string;
@@ -23,7 +24,8 @@ export function TimeBlock({ timePeriod }: Props) {
   type Timeout = ReturnType<typeof setTimeout>;
 
   const fetch = useFetchWithToken();
-
+  const { enqueueSnackbar } = useSnackbar();
+  const [error, setError] = React.useState<string | null>(null)
   const [state, setState] = React.useState<TimePeriod>(timePeriod);
   const [expanded, setExpanded] = React.useState<boolean>(false);
   const timeout = React.useRef<Timeout>();
@@ -64,16 +66,27 @@ export function TimeBlock({ timePeriod }: Props) {
       )
         .then((res) => {
           if (res.status === 200) {
-            res.json().then((data: TimePeriod) => {
+            res.json().then((resJson: TimePeriod) => {
               lock.current = true;
               setState(data);
+              setError(null)
             });
+          } else if (res.status === 422) {
+            res.json().then((resJson: {detail: string;}) => {
+              setError(resJson.detail)
+            })
           }
         })
         .then(() => (lock.current = false));
     },
     [fetch]
   );
+
+  React.useEffect(()=>{
+    if (error) {
+      enqueueSnackbar(error, { variant: "error" });
+    }
+  }, [error, enqueueSnackbar])
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
