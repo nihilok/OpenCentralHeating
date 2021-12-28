@@ -1,6 +1,7 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import ValidationError
 
 from api_v2.heating.manage_systems import (
     get_system_from_memory_http,
@@ -111,7 +112,10 @@ async def update_period(
     period: PHeatingPeriod,
     user: HouseholdMember = Depends(get_current_active_user),
 ):
-    p = await update_time(user.household_id, period)
+    try:
+        p = await update_time(user.household_id, period)
+    except ValueError as e:
+        raise ValidationError(str(e), e)
     hs = await get_system_from_memory_http(period.heating_system_id, user.household_id)
     await hs.complex_check_time()
     return PHeatingPeriod(**p.__dict__)
