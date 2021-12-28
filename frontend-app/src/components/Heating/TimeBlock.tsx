@@ -30,10 +30,12 @@ export function TimeBlock({ timePeriod }: Props) {
   const [expanded, setExpanded] = React.useState<boolean>(false);
   const timeout = React.useRef<Timeout>();
   const lock = React.useRef<boolean>(true);
+  const resetState = React.useRef<TimePeriod>(timePeriod);
   const first = React.useRef<boolean>(true);
 
   const handleTimeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     lock.current = false;
+    resetState.current = state
     setState((p) => ({
       ...p,
       [event.target.name]: event.target.value,
@@ -74,6 +76,7 @@ export function TimeBlock({ timePeriod }: Props) {
           } else if (res.status === 422) {
             res.json().then((resJson: {detail: string;}) => {
               setError(resJson.detail)
+              setState(resetState.current)
             })
           }
         })
@@ -105,6 +108,7 @@ export function TimeBlock({ timePeriod }: Props) {
 
   function handleSliderChange(event: Event, newValue: number | number[]) {
     lock.current = false;
+    resetState.current = state
     setState((prev) => ({ ...prev, target: newValue as number }));
   }
 
