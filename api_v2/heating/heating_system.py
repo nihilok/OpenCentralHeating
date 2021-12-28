@@ -67,7 +67,7 @@ class HeatingSystem:
             self.measurements = req.json()
         except Exception as e:
             if not self.error[0]:
-                log_msg = f"{__name__}: {e.__class__.__name__}: {str(e)}"
+                log_msg = f"{__name__}: {e.__class__.__name__}: {str(e)} ({self.temperature_url})"
                 logger.error(log_msg)
                 send_telegram_message(log_msg)
                 self.error[0] = True
@@ -75,7 +75,7 @@ class HeatingSystem:
             return self.measurements
         except AttributeError as e:
             if not self.error[1]:
-                log_msg = f"{__name__}: {e.__class__.__name__}: No measurements found on first load"
+                log_msg = f"{__name__}: {e.__class__.__name__}: No measurements found on first load ({self.system_id=})"
                 logger.error(log_msg)
                 send_telegram_message(log_msg)
                 self.error[1] = True
