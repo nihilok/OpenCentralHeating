@@ -115,7 +115,7 @@ async def update_period(
     try:
         p = await update_time(user.household_id, period)
     except ValueError as e:
-        raise ValidationError(str(e), e)
+        raise HTTPException(422, detail=str(e))
     hs = await get_system_from_memory_http(period.heating_system_id, user.household_id)
     await hs.complex_check_time()
     return PHeatingPeriod(**p.__dict__)
