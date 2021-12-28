@@ -10,15 +10,13 @@ from api_v2.heating.manage_systems import (
     create_instance,
     kill_system,
 )
-from api_v2.heating.manage_times import get_times, new_time, delete_time
+from api_v2.heating.manage_times import get_times, delete_time, update_time
 from api_v2.models import (
     HouseholdMember,
-    HeatingPeriod,
     Household,
     HeatingV2Response,
     SystemInfo,
     PHeatingPeriod,
-    HeatingPeriodModelCreator,
     PHeatingSystemIn,
     HeatingSystemModelCreator,
     ProgramOnlyResponse,
@@ -109,11 +107,11 @@ async def delete_period(
 
 
 @router.put("/heating/times")
-async def update_time(
+async def update_period(
     period: PHeatingPeriod,
     user: HouseholdMember = Depends(get_current_active_user),
 ):
-    p = await update_time(period)
+    p = await update_time(user.household_id, period)
     hs = await get_system_from_memory_http(period.heating_system_id, user.household_id)
     await hs.complex_check_time()
     return PHeatingPeriod(**p.__dict__)

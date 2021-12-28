@@ -10,7 +10,7 @@ async def get_times(household_id: int):
     )
 
 
-def check_conflicts(household_id: int, period: PHeatingPeriod):
+async def check_conflicts(household_id: int, period: PHeatingPeriod):
     for p in await get_times(household_id):
         if p.heating_system.system_id == period.heating_system_id and p.period_id != period.period_id:
             if period.time_on <= p.time_on < period.time_off:
@@ -21,7 +21,7 @@ def check_conflicts(household_id: int, period: PHeatingPeriod):
 
 
 async def new_time(household_id: int, period: PHeatingPeriod, user_id: int):
-    check_conflicts(household_id, period)
+    await check_conflicts(household_id, period)
     new_period = await HeatingPeriod.create(
         household_id=household_id,
         created_by_id=user_id,
@@ -30,7 +30,8 @@ async def new_time(household_id: int, period: PHeatingPeriod, user_id: int):
     return await HeatingPeriodModelCreator.from_tortoise_orm(new_period)
 
 
-async def update_time(period: PHeatingPeriod):
+async def update_time(household_id: int, period: PHeatingPeriod):
+    await check_conflicts(household_id, period)
     p = await HeatingPeriod.get(period_id=period.period_id)
     p.__dict__.update(**period.dict(exclude_unset=True))
     await p.save()
