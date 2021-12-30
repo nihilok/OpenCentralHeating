@@ -4,6 +4,7 @@ import { BackButton } from "../IconButtons/BackButton";
 import { TimeBlock, TimePeriod } from "./TimeBlock";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
 import { FullScreenComponent } from "../Custom/FullScreenComponent";
+import {NewTimeSlot} from "./NewTimeSlot";
 // import { Button } from "@mui/material";
 
 interface Props {}
@@ -59,6 +60,7 @@ export function TimesForm(props: Props) {
       {/*    New*/}
       {/*  </Button>*/}
       {/*</div>*/}
+      <NewTimeSlot/>
     </FullScreenComponent>
   );
 }
