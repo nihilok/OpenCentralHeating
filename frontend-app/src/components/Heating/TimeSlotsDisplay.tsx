@@ -1,8 +1,11 @@
 import * as React from "react";
 import { Box, Tab, Tabs } from "@mui/material";
+import { TimePeriod } from "./TimeBlock";
 
 interface Props {
-  timeSlots: number[];
+  timeSlots: TimePeriod[];
+  choosePeriod: React.Dispatch<any>;
+  selected: TimePeriod;
 }
 
 interface TabPanelProps {
@@ -22,49 +25,66 @@ function TabPanel(props: TabPanelProps) {
       aria-labelledby={`simple-tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box>
-          {children}
-        </Box>
-      )}
+      {value === index && <Box>{children}</Box>}
     </div>
   );
 }
 
-
-export function TimeSlotsDisplay({ timeSlots }: Props) {
-  const [system, setSystem] = React.useState(1);
+export function TimeSlotsDisplay({ timeSlots, choosePeriod, selected }: Props) {
+  const [system, setSystem] = React.useState(selected?.heating_system_id || 3);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setSystem(newValue);
+    setSystem(newValue + 3);
+  };
+
+  const handleClickOnPeriod = (event: React.MouseEvent) => {
+    const target = event.target as HTMLElement;
+    const systemIndex = [
+      parseInt(target.id.split(" ")[0]),
+      parseInt(target.id.split(" ")[1]),
+    ];
+    const period = timeSlots.filter(
+      (slot) => slot.heating_system_id === systemIndex[0]
+    )[systemIndex[1]];
+    choosePeriod(period);
   };
 
   return (
     <>
-      <div style={{display: "flex", flexDirection: "column", background: 'rgba(0, 0, 0, 0.3)', borderRadius: '5px', boxShadow: 'inset 0 0 10px rgba(0, 15, 0, 0.9)'}}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          background: "rgba(0, 0, 0, 0.3)",
+          borderRadius: "5px",
+          boxShadow: "inset 0 0 10px rgba(0, 15, 0, 0.9)",
+        }}
+      >
         <Tabs
-          value={system}
+          value={system - 3}
           onChange={handleChange}
-          sx={{margin: '0 auto'}}
+          sx={{ margin: "0 auto" }}
         >
-          <Tab label="Upstairs" sx={{color: 'white'}}/>
-          <Tab label="Downstairs" sx={{color: 'white'}}/>
+          <Tab label="Upstairs" sx={{ color: "white" }} />
+          <Tab label="Downstairs" sx={{ color: "white" }} />
         </Tabs>
-        <TabPanel index={0} value={system}>
-        <ul className="timeslot-list">
-          <li>{"20:00 -> 21:00"}</li>
-          <li>{"20:00 -> 21:00"}</li>
-          <li>{"20:00 -> 21:00"}</li>
-          <li>{"20:00 -> 21:00"}</li>
-        </ul>
-        </TabPanel>
-        <TabPanel index={1} value={system}>
-        <ul className="timeslot-list">
-          <li>{"06:00 -> 08:00"}</li>
-          <li>{"13:00 -> 16:00"}</li>
-          <li>{"18:00 -> 19:30"}</li>
-        </ul>
-        </TabPanel>
+
+        {[3, 4].map((mappedSystem, index) => (
+          <TabPanel index={index} value={system - 3}>
+            <ul className="timeslot-list">
+              {timeSlots
+                .filter((slot) => slot.heating_system_id === mappedSystem)
+                .map((slot, indx) => (
+                  <li
+                    className={selected?.period_id === slot.period_id ? "selected" : ''}
+                    onClick={handleClickOnPeriod}
+                    key={`${slot.heating_system_id}-${indx}`}
+                    id={`${slot.heating_system_id} ${indx}`}
+                  >{`${slot.time_on} -> ${slot.time_off}`}</li>
+                ))}
+            </ul>
+          </TabPanel>
+        ))}
       </div>
     </>
   );

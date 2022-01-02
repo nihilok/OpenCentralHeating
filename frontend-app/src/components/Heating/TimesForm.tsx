@@ -62,7 +62,7 @@ export function TimesForm(props: Props) {
       {/*/!*    New*!/*/}
       {/*/!*  </Button>*!/*/}
       {/*/!*</div>*!/*/}
-      <NewTimeBlock />
+      <NewTimeBlock timePeriods={timePeriods}/>
     </FullScreenComponent>
   );
 }

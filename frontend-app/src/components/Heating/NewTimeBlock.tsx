@@ -5,18 +5,18 @@ import {TimeSlotsDisplay} from "./TimeSlotsDisplay";
 import {TemperatureControl} from "./TemperatureControl";
 
 interface Props {
-  timePeriod?: TimePeriod;
+  timePeriods: TimePeriod[];
 }
 
-export function NewTimeBlock({timePeriod}: Props) {
-  const [temperature, setTemperature] = React.useState(20)
+export function NewTimeBlock({timePeriods}: Props) {
+  const [selectedPeriod, setSelectedPeriod] = React.useState<TimePeriod | undefined>(undefined)
 
   return (
     <div className="time-block__grid">
-      <MuiTimeslotPicker timePeriod={timePeriod}/>
+      <MuiTimeslotPicker timePeriod={selectedPeriod}/>
       <div className="time-block-right__grid">
-        <TimeSlotsDisplay timeSlots={[1, 2]}/>
-        <TemperatureControl value={temperature} setValue={setTemperature}/>
+        <TimeSlotsDisplay timeSlots={timePeriods} choosePeriod={setSelectedPeriod} selected={selectedPeriod as TimePeriod}/>
+        <TemperatureControl timeSlot={selectedPeriod} setValue={setSelectedPeriod}/>
       </div>
     </div>
   );
