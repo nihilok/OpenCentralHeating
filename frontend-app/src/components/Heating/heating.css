@@ -133,10 +133,11 @@
     width: calc(100% / 24);
 }
 
-.time-slot-picker__wrapper {
+.time-slot__wrapper {
     margin: 3rem auto;
-    min-width: 100%;
-    max-width: 100vw;
+    min-width: 90%;
+    max-width: 95vw;
+    min-height: 24rem;
 }
 
 .time-slot__bars {
@@ -148,4 +149,54 @@
     background: white;
     height: 3rem;
     width: calc(100% / 24);
+}
+
+.MuiSlider-markLabel {
+    color: white !important;
+}
+
+.time-block__grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    width: 100%;
+    height: 100%;
+    margin-top: 2rem;
+}
+
+.time-block-right__grid {
+    display: grid;
+    grid-template-rows: 2fr 3fr;
+    text-align: right;
+    padding-right: 2rem;
+}
+
+.timeslot-list {
+    list-style-type: none;
+    padding: 1rem 0.25rem 0;
+    margin: 0;
+    overflow-y: auto;
+    max-height: 25vh;
+}
+
+.timeslot-list > li {
+    padding: .5rem;
+    margin: 0;
+    text-align: center;
+}
+.timeslot-list > li:nth-child(even) {
+    background:
+        linear-gradient(90deg, rgba(0,0,0,0), rgba(0,15,0,0.3), rgba(0,0,0,0));
+}
+
+.temperature-control {
+    height: 100%;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.temperature-control > h1 {
+    font-size: 5rem;
+    width: 100%;
+    margin-right: 1rem;
 }

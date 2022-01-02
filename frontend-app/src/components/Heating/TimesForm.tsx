@@ -5,6 +5,8 @@ import { TimeBlock, TimePeriod } from "./TimeBlock";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
 import { FullScreenComponent } from "../Custom/FullScreenComponent";
 import {NewTimeSlot} from "./NewTimeSlot";
+import {MuiTimeslotPicker} from "./MuiTimeslotPicker";
+import {NewTimeBlock} from "./NewTimeBlock";
 // import { Button } from "@mui/material";
 
 interface Props {}
@@ -42,25 +44,25 @@ export function TimesForm(props: Props) {
         <BackButton path={"/"} />
         <div />
       </TopBar>
-      <div className={"times-container"}>
-        {allSystems.map((id) =>
-          timePeriods
-            .filter((period) => period.heating_system_id === id)
-            .map((timePeriod: TimePeriod) => (
-              <TimeBlock timePeriod={timePeriod} />
-            ))
-        )}
-      </div>
-      {/*<div>*/}
-      {/*  <Button*/}
-      {/*    onClick={() => prompt("New Timeblock!")}*/}
-      {/*    variant={"contained"}*/}
-      {/*    color={"primary"}*/}
-      {/*  >*/}
-      {/*    New*/}
-      {/*  </Button>*/}
+      {/*<div className={"times-container"}>*/}
+      {/*  {allSystems.map((id) =>*/}
+      {/*    timePeriods*/}
+      {/*      .filter((period) => period.heating_system_id === id)*/}
+      {/*      .map((timePeriod: TimePeriod) => (*/}
+      {/*        <TimeBlock timePeriod={timePeriod} />*/}
+      {/*      ))*/}
+      {/*  )}*/}
       {/*</div>*/}
-      <NewTimeSlot/>
+      {/*/!*<div>*!/*/}
+      {/*/!*  <Button*!/*/}
+      {/*/!*    onClick={() => prompt("New Timeblock!")}*!/*/}
+      {/*/!*    variant={"contained"}*!/*/}
+      {/*/!*    color={"primary"}*!/*/}
+      {/*/!*  >*!/*/}
+      {/*/!*    New*!/*/}
+      {/*/!*  </Button>*!/*/}
+      {/*/!*</div>*!/*/}
+      <NewTimeBlock />
     </FullScreenComponent>
   );
 }
