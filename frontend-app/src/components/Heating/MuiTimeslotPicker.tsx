@@ -3,8 +3,8 @@ import { TimePeriod } from "./TimeBlock";
 import { Box, Slider } from "@mui/material";
 
 interface Props {
-  timePeriod?: TimePeriod;
-  setter?: React.Dispatch<any>;
+  timePeriod: TimePeriod;
+  setter: React.Dispatch<any>;
 }
 
 export function MuiTimeslotPicker({ timePeriod, setter }: Props) {
@@ -28,6 +28,19 @@ export function MuiTimeslotPicker({ timePeriod, setter }: Props) {
     return `${value} o'clock`;
   }
 
+  React.useEffect(()=>{
+    if (parseInt(timePeriod?.time_on.split(':')[0] as string) !== value[0])
+    setter((p: TimePeriod) => ({
+      ...p,
+      time_on: value[0] + ':00',
+    }))
+    if (parseInt(timePeriod?.time_off.split(':')[0] as string) !== value[1])
+    setter((p: TimePeriod) => ({
+      ...p,
+      time_off: value[1] + ':00',
+    }))
+  }, [setter, value])
+
   const [marks] = React.useState(
     [...Array(48)]
       .map((nullVal, index) => ({
@@ -39,6 +52,7 @@ export function MuiTimeslotPicker({ timePeriod, setter }: Props) {
 
   return (
     <Slider
+      sx={{marginLeft: '1rem'}}
       orientation="vertical"
       getAriaLabel={() => "Time slot"}
       value={value}

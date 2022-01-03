@@ -8,6 +8,11 @@ interface Props {
 }
 
 export function TemperatureControl({ timeSlot, setValue }: Props) {
+  const [value, setState] = React.useState(timeSlot?.target || 20)
+
+  React.useEffect(()=>{
+    setState(timeSlot?.target || 20)
+  }, [timeSlot])
   return (
     <div>
       <div className={"temperature-control"}>
@@ -16,7 +21,7 @@ export function TemperatureControl({ timeSlot, setValue }: Props) {
           orientation={"vertical"}
           max={30}
           min={10}
-          value={timeSlot?.target}
+          value={value}
           onChange={(e, newVal) => setValue((prev: TimePeriod)=>({
             ...prev,
             target: newVal,

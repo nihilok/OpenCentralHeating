@@ -6,6 +6,7 @@ interface Props {
   timeSlots: TimePeriod[];
   choosePeriod: React.Dispatch<any>;
   selected: TimePeriod;
+  systems: number[];
 }
 
 interface TabPanelProps {
@@ -30,7 +31,7 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-export function TimeSlotsDisplay({ timeSlots, choosePeriod, selected }: Props) {
+export function TimeSlotsDisplay({ timeSlots, choosePeriod, selected, systems }: Props) {
   const [system, setSystem] = React.useState(selected?.heating_system_id || 3);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
