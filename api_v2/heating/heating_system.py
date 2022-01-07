@@ -45,13 +45,13 @@ class HeatingSystem:
         self.gpio_pin = gpio_pin
         self.temperature_url = temperature_url
         self.error: list[bool, bool] = [False, False]
+        self.system_id = system_id
         self.measurements = self.get_measurements()
         self.program_on = json.loads(self.config.get("program_on", "false"))
         self.advance_on = None
         self.advance_end: int = 0
         self.thread = None
         self.household_id = household_id
-        self.system_id = system_id
         self.current_period = None
         loop = asyncio.get_running_loop()
         loop.create_task(self.main_loop(self.PROGRAM_LOOP_INTERVAL))
