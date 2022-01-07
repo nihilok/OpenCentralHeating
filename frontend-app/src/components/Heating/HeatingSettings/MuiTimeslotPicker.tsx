@@ -1,9 +1,10 @@
 import * as React from "react";
-import { TimePeriod } from "./TimeBlock";
-import { Box, Slider } from "@mui/material";
+import { TimePeriod } from "../TimeBlock";
+import { Slider } from "@mui/material";
+import {IContainerState} from "./HeatingSettingsContainer";
 
 interface Props {
-  timePeriod: TimePeriod;
+  timePeriod: TimePeriod | null;
   setter: React.Dispatch<any>;
 }
 
@@ -20,8 +21,23 @@ export function MuiTimeslotPicker({ timePeriod, setter }: Props) {
     ]);
   }, [timePeriod]);
 
+  const formatTime = (time: number) => {
+    let digit: string | string[] = time.toFixed(2)
+    digit = digit.toString().split('.')
+    const minutes = (parseInt(digit as unknown as string) - parseInt((digit[0] as unknown as string))) * 60
+    if (digit[0].length < 2) {
+      return '0' + digit[0] as string + ':' + minutes
+    }
+    return digit[0] as string + ':' + minutes
+  }
+
   const handleChange = (event: Event, newValue: number | number[]) => {
-    setValue(newValue as number[]);
+    const val = newValue as number[];
+    setValue(val);
+    setter((p: IContainerState) => ({
+    ...p,
+    selectedPeriod: {...p.selectedPeriod, time_on: formatTime(val[0]), time_off: formatTime(val[1])}
+    }))
   };
 
   function valuetext(value: number) {
@@ -51,16 +67,18 @@ export function MuiTimeslotPicker({ timePeriod, setter }: Props) {
   );
 
   return (
-    <Slider
+    <div className="timeslot-picker"><Slider
       sx={{marginLeft: '1rem'}}
       orientation="vertical"
       getAriaLabel={() => "Time slot"}
       value={value}
+      step={0.5}
       max={24}
+      disabled={!timePeriod}
       onChange={handleChange}
       valueLabelDisplay="off"
       getAriaValueText={valuetext}
       marks={marks}
-    />
+    /></div>
   );
 }

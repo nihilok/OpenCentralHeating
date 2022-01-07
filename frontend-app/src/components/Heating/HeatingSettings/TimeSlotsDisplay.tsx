@@ -1,11 +1,11 @@
 import * as React from "react";
 import { Box, Tab, Tabs } from "@mui/material";
-import { TimePeriod } from "./TimeBlock";
+import { TimePeriod } from "../TimeBlock";
 
 interface Props {
   timeSlots: TimePeriod[];
   choosePeriod: React.Dispatch<any>;
-  selected: TimePeriod;
+  selected: TimePeriod | null;
   systems: number[];
 }
 
@@ -59,6 +59,7 @@ export function TimeSlotsDisplay({ timeSlots, choosePeriod, selected, systems }:
           background: "rgba(0, 0, 0, 0.3)",
           borderRadius: "5px",
           boxShadow: "inset 0 0 10px rgba(0, 15, 0, 0.9)",
+          gridColumn: 2,
         }}
       >
         <Tabs
@@ -71,7 +72,7 @@ export function TimeSlotsDisplay({ timeSlots, choosePeriod, selected, systems }:
         </Tabs>
 
         {[3, 4].map((mappedSystem, index) => (
-          <TabPanel index={index} value={system - 3}>
+          <TabPanel index={index} value={system - 3} key={`${index}-${mappedSystem}`}>
             <ul className="timeslot-list">
               {timeSlots
                 .filter((slot) => slot.heating_system_id === mappedSystem)

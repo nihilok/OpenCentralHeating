@@ -1,3 +1,68 @@
-.heating-settings {
+.heating-settings-container {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  grid-template-rows: 1fr 1fr;
+  place-items: center;
+  max-width: 500px;
+  margin: auto;
+  padding-top: 6rem;
+}
 
+.temperature-control {
+  grid-column: 2
+}
+
+.timeslot-picker {
+  grid-row: 1 / -1;
+  height: 100%;
+  padding: 1rem 0;
+}
+
+.timeslot-list {
+    list-style-type: none;
+    padding: 1rem 0.25rem 0;
+    margin: 0 auto;
+    overflow-y: auto;
+    max-height: 25vh;
+    min-height: 25vh;
+    min-width: 14vw;
+    font-size: 1rem;
+}
+
+.timeslot-list > li {
+    cursor: pointer;
+    padding: .5rem;
+    margin: 0;
+    text-align: center;
+    position: relative;
+    color: #FFA500;
+    text-shadow: 0 0 2px;
+}
+
+.temperature-control {
+    height: 100%;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.temperature-control > h1 {
+    font-size: calc(10vmin + 1rem);
+    width: 4ch;
+    margin-right: 1rem;
+  text-align: right;
+}
+
+li.selected {
+    color: white;
+    text-shadow: 0 0 2px;
+    background:
+        linear-gradient(90deg, rgba(0,0,0,0), rgba(0,15,0,0.3), rgba(0,0,0,0));
+}
+
+.selected::before {
+    content: '\21E2';
+    margin: auto .25rem auto 0;
+    position: absolute;
+    left: 15%;
 }

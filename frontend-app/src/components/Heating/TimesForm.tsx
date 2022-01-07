@@ -4,7 +4,6 @@ import { BackButton } from "../IconButtons/BackButton";
 import { TimePeriod } from "./TimeBlock";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
 import { FullScreenComponent } from "../Custom/FullScreenComponent";
-import {NewTimeBlock} from "./NewTimeBlock";
 
 interface Props {}
 
@@ -41,7 +40,6 @@ export function TimesForm(props: Props) {
         <BackButton path={"/"} />
         <div />
       </TopBar>
-      <NewTimeBlock timePeriods={timePeriods} systems={allSystems}/>
     </FullScreenComponent>
   );
 }
