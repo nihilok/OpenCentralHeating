@@ -1,21 +1,26 @@
 import calendar
+from typing import Optional
 
 from api_v2.utils import BritishTime
 from api_v2.models import PHeatingPeriod, HeatingPeriod, HeatingPeriodModelCreator
 
 
-async def get_times(household_id: int):
-    return await HeatingPeriodModelCreator.from_queryset(
-        HeatingPeriod.filter(household_id=household_id)
-    )
+async def get_times(household_id: int, checking_period: Optional[int] = None):
+
+    qs = HeatingPeriod.filter(household_id=household_id)
+    if checking_period is not None:
+        qs = qs.exclude(period_id=checking_period)
+
+    return await HeatingPeriodModelCreator.from_queryset(qs)
 
 
 async def check_conflicts(household_id: int, period: PHeatingPeriod):
-    for p in await get_times(household_id):
-        if p.period_id == period.period_id:
-            continue
+    for p in await get_times(household_id, period.period_id):
         if p.heating_system.system_id == period.heating_system_id:
-            if p.time_on <= period.time_on < p.time_off or p.time_on <= period.time_off < p.time_off:
+            if (
+                p.time_on <= period.time_on < p.time_off
+                or p.time_on <= period.time_off < p.time_off
+            ):
                 for day in period.days.dict().items():
                     if day[1]:
                         if p.days[day[0]]:
