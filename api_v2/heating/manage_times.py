@@ -27,7 +27,7 @@ async def check_conflicts(household_id: int, period: PHeatingPeriod):
                 for day in period.days.dict().items():
                     if day[1]:
                         if p.days[day[0]]:
-                            raise ValueError(f"Period overlaps with another (period_id: ${p.period_id})")
+                            raise ValueError(f"Period overlaps with another")
 
 
 async def new_time(household_id: int, period: PHeatingPeriod, user_id: int):
