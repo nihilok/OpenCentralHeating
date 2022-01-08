@@ -6,10 +6,10 @@ import {
 } from "../../../context/HeatingContext";
 
 export function TemperatureControl() {
-  const { context, dispatch } = useHeatingSettings();
+  const { heating, dispatch } = useHeatingSettings();
 
   const [value, setValue] = React.useState(
-    context.selectedPeriod?.target || 20
+    heating.selectedPeriod?.target || 20
   );
 
   const handleChange = (e: Event, newVal: number | number[]) => {
@@ -17,7 +17,7 @@ export function TemperatureControl() {
     dispatch({
       type: UPDATE_TEMPERATURE,
       payload: {
-        period_id: context.selectedPeriod?.period_id || 3,
+        period_id: heating.selectedPeriod?.period_id || 3,
         target: newVal as number,
       },
     });
@@ -25,9 +25,9 @@ export function TemperatureControl() {
 
   return (
     <div className={"temperature-control"}>
-      <h1>{context.selectedPeriod?.target}°C</h1>
+      <h1>{heating.selectedPeriod?.target}°C</h1>
       <Slider
-        disabled={!context.selectedPeriod}
+        disabled={!heating.selectedPeriod}
         max={30}
         min={10}
         value={value}

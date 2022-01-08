@@ -35,7 +35,7 @@ export function HeatingSettingsContainer() {
   const [getPeriods, setGetPeriods] = React.useState(false);
   const lock = React.useRef(false);
 
-  const { context: heatingContext, dispatch: heatingDispatch } =
+  const { heating, dispatch: heatingDispatch } =
     useHeatingSettings();
 
   React.useEffect(() => {
@@ -125,7 +125,7 @@ export function HeatingSettingsContainer() {
 
   const debounce = React.useCallback(
     (period: TimePeriod | null) => {
-      if (heatingContext.lock) return;
+      if (heating.lock) return;
       clearTimeout(debounceTimeout.current as Timeout);
       if (period) {
         debounceTimeout.current = setTimeout(() => update(period), 1000);
@@ -135,8 +135,8 @@ export function HeatingSettingsContainer() {
   );
 
   React.useEffect(() => {
-    if (!heatingContext.lock) debounce(heatingContext.selectedPeriod);
-  }, [heatingContext.selectedPeriod, debounce]);
+    if (!heating.lock) debounce(heating.selectedPeriod);
+  }, [heating.selectedPeriod, debounce]);
 
   return (
     <>

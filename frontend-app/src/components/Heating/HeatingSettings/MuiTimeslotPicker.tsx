@@ -7,7 +7,7 @@ import {
 } from "../../../context/HeatingContext";
 
 export function MuiTimeslotPicker() {
-  const { context, dispatch } = useHeatingSettings();
+  const { heating, dispatch } = useHeatingSettings();
 
   const formatTime = (time: number) => {
     let digit: string | string[] = time.toFixed(2);
@@ -34,18 +34,18 @@ export function MuiTimeslotPicker() {
   };
 
   const [value, setValue] = React.useState<number[]>([
-    context.selectedPeriod ? unformatTime(context.selectedPeriod.time_on) : 0,
-    context.selectedPeriod ? unformatTime(context.selectedPeriod.time_off) : 24,
+    heating.selectedPeriod ? unformatTime(heating.selectedPeriod.time_on) : 0,
+    heating.selectedPeriod ? unformatTime(heating.selectedPeriod.time_off) : 24,
   ]);
 
   React.useEffect(() => {
     setValue([
-      context.selectedPeriod ? unformatTime(context.selectedPeriod.time_on) : 0,
-      context.selectedPeriod
-        ? unformatTime(context.selectedPeriod.time_off)
+      heating.selectedPeriod ? unformatTime(heating.selectedPeriod.time_on) : 0,
+      heating.selectedPeriod
+        ? unformatTime(heating.selectedPeriod.time_off)
         : 24,
     ]);
-  }, [context.selectedPeriod?.period_id, context.revert]);
+  }, [heating.selectedPeriod?.period_id, heating.revert]);
 
   const handleChange = (event: Event, newValue: number | number[]) => {
     const val = newValue as number[];
@@ -56,7 +56,7 @@ export function MuiTimeslotPicker() {
     dispatch({
       type: UPDATE_TIMES,
       payload: {
-        period_id: context.selectedPeriod?.period_id,
+        period_id: heating.selectedPeriod?.period_id,
         time_on: formatTime(val[0]),
         time_off: endVal || formatTime(val[1]),
       },
@@ -80,7 +80,7 @@ export function MuiTimeslotPicker() {
         getAriaLabel={() => "Time slot"}
         value={value}
         max={24}
-        disabled={!context.selectedPeriod}
+        disabled={!heating.selectedPeriod}
         onChange={handleChange}
         marks={marks}
       />

@@ -46,7 +46,7 @@ type Action =
   | { type: typeof DELETE_PERIOD; payload: Payload };
 
 interface ContextWithReducer {
-  context: IHeatingContext;
+  heating: IHeatingContext;
   dispatch: React.Dispatch<Action>;
 }
 
@@ -60,7 +60,7 @@ const initialContext = {
 };
 
 const defaultValue = {
-  context: initialContext,
+  heating: initialContext,
   dispatch: () => initialContext,
 };
 
@@ -112,10 +112,10 @@ const reducer = (state: IHeatingContext, { payload, type }: Action) => {
 };
 
 export const HeatingContextProvider: React.FC = ({ children }) => {
-  const [context, dispatch] = React.useReducer(reducer, defaultValue as never);
+  const [heating, dispatch] = React.useReducer(reducer, defaultValue as never);
 
   return (
-    <HeatingContext.Provider value={{ context, dispatch }}>
+    <HeatingContext.Provider value={{ heating, dispatch }}>
       {children}
     </HeatingContext.Provider>
   );

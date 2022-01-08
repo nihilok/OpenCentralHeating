@@ -30,10 +30,10 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export function TimeSlotsDisplay() {
-  const { context, dispatch } = useHeatingSettings();
+  const { heating, dispatch } = useHeatingSettings();
 
   const [system, setSystem] = React.useState(
-    context.selectedPeriod?.heating_system_id || 3
+    heating.selectedPeriod?.heating_system_id || 3
   );
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -46,7 +46,7 @@ export function TimeSlotsDisplay() {
       payload: {},
     });
     const target = event.target as HTMLElement;
-    const period = context.allPeriods.filter(
+    const period = heating.allPeriods.filter(
       (slot) => slot.period_id === parseInt(target.id)
     )[0];
     dispatch({
@@ -62,7 +62,7 @@ export function TimeSlotsDisplay() {
       type: UNLOCK,
       payload: {},
     });
-  }, [dispatch, context.selectedPeriod?.period_id]);
+  }, [dispatch, heating.selectedPeriod?.period_id]);
 
   return (
     <>
@@ -83,13 +83,13 @@ export function TimeSlotsDisplay() {
             key={`${index}-${mappedSystem}`}
           >
             <ul className="timeslot-list">
-              {context.allPeriods
-                ? context.allPeriods
+              {heating.allPeriods
+                ? heating.allPeriods
                     .filter((slot) => slot.heating_system_id === mappedSystem)
                     .map((slot, indx) => (
                       <li
                         className={
-                          context.selectedPeriod?.period_id === slot.period_id
+                          heating.selectedPeriod?.period_id === slot.period_id
                             ? "selected"
                             : ""
                         }
