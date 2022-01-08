@@ -14,7 +14,6 @@ export function TemperatureControl({ timeSlot, setter }: Props) {
       <div className={"temperature-control"}>
         <h1>{timeSlot?.target}°C</h1>
         <Slider
-          orientation={"vertical"}
           disabled={!timeSlot}
           max={30}
           min={10}

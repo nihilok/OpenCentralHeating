@@ -53,14 +53,7 @@ export function TimeSlotsDisplay({ timeSlots, choosePeriod, selected, systems }:
   return (
     <>
       <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          background: "rgba(0, 0, 0, 0.3)",
-          borderRadius: "5px",
-          boxShadow: "inset 0 0 10px rgba(0, 15, 0, 0.9)",
-          gridColumn: 2,
-        }}
+        className={"slots-display-screen"}
       >
         <Tabs
           value={system - 3}

@@ -24,7 +24,11 @@ export function MuiTimeslotPicker({ timePeriod, setter }: Props) {
   const formatTime = (time: number) => {
     let digit: string | string[] = time.toFixed(2)
     digit = digit.toString().split('.')
-    const minutes = (parseInt(digit as unknown as string) - parseInt((digit[0] as unknown as string))) * 60
+    let minutes: number | string = (parseInt(digit as unknown as string) - parseInt((digit[0] as unknown as string))) * 60
+    minutes = minutes.toString()
+    if (minutes.length < 2) {
+      minutes = '0' + minutes
+    }
     if (digit[0].length < 2) {
       return '0' + digit[0] as string + ':' + minutes
     }
@@ -46,14 +50,14 @@ export function MuiTimeslotPicker({ timePeriod, setter }: Props) {
 
   React.useEffect(()=>{
     if (parseInt(timePeriod?.time_on.split(':')[0] as string) !== value[0])
-    setter((p: TimePeriod) => ({
-      ...p,
-      time_on: value[0] + ':00',
-    }))
+      setter((p: TimePeriod) => ({
+        ...p,
+        time_on: formatTime(value[0]),
+      }))
     if (parseInt(timePeriod?.time_off.split(':')[0] as string) !== value[1])
     setter((p: TimePeriod) => ({
       ...p,
-      time_off: value[1] + ':00',
+      time_off: formatTime(value[1]),
     }))
   }, [setter, value])
 

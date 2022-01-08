@@ -29,7 +29,7 @@ export interface IContainerState {
 export function HeatingSettingsContainer({ currentSystem }: Props) {
   const fetch = useFetchWithToken();
   const { enqueueSnackbar } = useSnackbar();
-  const getPeriods = React.useRef(false);
+  const [getPeriods, setGetPeriods] = React.useState(false);
   const lock = React.useRef(false);
   const mouseDown = React.useRef(0);
 
@@ -59,11 +59,9 @@ export function HeatingSettingsContainer({ currentSystem }: Props) {
         }
       })
     );
-  }, [fetch]);
+  }, [fetch, getPeriods]);
 
-  const debounceTimeout = React.useRef<Timeout | null>(
-    null
-  );
+  const debounceTimeout = React.useRef<Timeout | null>(null);
 
   const update = React.useCallback(
     async (frozenState) => {
@@ -83,26 +81,36 @@ export function HeatingSettingsContainer({ currentSystem }: Props) {
           saturday: true,
           sunday: true,
         },
-      }
-      fetch("/v2/heating/times", "PUT", data).then((res) => {
-        if (res.status === 200) {
-          getPeriods.current = !getPeriods.current;
-        } else if (res.status === 422) {
-          res.json().then((resJson: { detail: string | { msg: string } }) => {
-            typeof resJson.detail === "string" || resJson.detail.msg?.length > 0 ?
-            enqueueSnackbar(
-              typeof resJson.detail === "string"
-                ? resJson.detail
-                : resJson.detail.msg,
-              { variant: "error" }
-            ) : console.log(resJson)
-          })
-        }
-      }).finally(() => {
-              console.log("freeing lock (done)");
-              lock.current = false;
-              console.groupEnd();
+      };
+      fetch("/v2/heating/times", "PUT", data)
+        .then((res) => {
+          if (res.status === 200) {
+            setGetPeriods(p => !p);
+          } else if (res.status === 422) {
+            res.json().then((resJson: { detail: string | { msg: string } }) => {
+              setContainerState((p) => ({
+                ...p,
+                selectedPeriod: p.allPeriods.filter(
+                  (period) => period.period_id === data.period_id
+                )[0],
+              }));
+              typeof resJson.detail === "string" ||
+              resJson.detail.msg?.length > 0
+                ? enqueueSnackbar(
+                    typeof resJson.detail === "string"
+                      ? resJson.detail
+                      : resJson.detail.msg,
+                    { variant: "error" }
+                  )
+                : console.log(resJson);
             });
+          }
+        })
+        .finally(() => {
+          console.log("freeing lock (done)");
+          lock.current = false;
+          console.groupEnd();
+        });
     },
     [enqueueSnackbar, fetch]
   );
@@ -112,11 +120,7 @@ export function HeatingSettingsContainer({ currentSystem }: Props) {
       lock.current = true;
       clearTimeout(debounceTimeout.current as Timeout);
       if (period) {
-        debounceTimeout.current = setTimeout(
-          () =>
-            update(period),
-          1000
-        );
+        debounceTimeout.current = setTimeout(() => update(period), 1000);
       }
     },
     [update]
@@ -171,33 +175,16 @@ export function HeatingSettingsContainer({ currentSystem }: Props) {
           obj.heating_system_id === stateCheck.heating_system_id
       );
 
-      if (diff.length === 0 && !lock.current && mouseDown.current > 0) {
+      if (diff.length === 0 && !lock.current) {
         console.group("Update Flow:");
         console.log("debouncing");
-        console.log(selectedPeriod)
+        console.log(selectedPeriod);
         debounce(selectedPeriod);
       } else if (!lock.current) {
-        clearTimeout(debounceTimeout.current as Timeout)
+        clearTimeout(debounceTimeout.current as Timeout);
       }
     }
-  }, [
-    debounce,
-    mapCheckers,
-    containerState.selectedPeriod,
-  ]);
-
-  React.useEffect(() => {
-
-    document.documentElement.onmousedown = function() {
-      console.log("mouseDown")
-      ++mouseDown.current
-    }
-
-    document.documentElement.onmouseup = function() {
-      console.log("mouseUp")
-      --mouseDown.current
-    }
-  }, [])
+  }, [debounce, mapCheckers, containerState.selectedPeriod]);
 
   return (
     <>
