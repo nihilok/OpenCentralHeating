@@ -8,10 +8,13 @@ import { useFetchWithToken } from "../../../hooks/FetchWithToken";
 import { useSnackbar } from "notistack";
 import { TopBar } from "../../Custom/TopBar";
 import { BackButton } from "../../IconButtons/BackButton";
-
-interface Props {
-  currentSystem: number;
-}
+import {
+  LOCK,
+  SELECT,
+  UNLOCK,
+  UPDATE_ALL,
+  useHeatingSettings,
+} from "../../../context/HeatingContext";
 
 type Timeout = ReturnType<typeof setTimeout>;
 
@@ -26,19 +29,14 @@ export interface IContainerState {
   systems: number[];
 }
 
-export function HeatingSettingsContainer({ currentSystem }: Props) {
+export function HeatingSettingsContainer() {
   const fetch = useFetchWithToken();
   const { enqueueSnackbar } = useSnackbar();
   const [getPeriods, setGetPeriods] = React.useState(false);
   const lock = React.useRef(false);
-  const mouseDown = React.useRef(0);
 
-  const [containerState, setContainerState] = React.useState<IContainerState>({
-    currentSystem,
-    selectedPeriod: null,
-    allPeriods: [],
-    systems: [],
-  });
+  const { context: heatingContext, dispatch: heatingDispatch } =
+    useHeatingSettings();
 
   React.useEffect(() => {
     fetch("/v2/heating/times").then((res) =>
@@ -51,20 +49,27 @@ export function HeatingSettingsContainer({ currentSystem }: Props) {
               systemsArr.push(system_id as number);
             }
           });
-          setContainerState((p) => ({
-            ...p,
-            allPeriods: data.periods,
-            systems: systemsArr,
-          }));
+          heatingDispatch({
+            type: UPDATE_ALL,
+            payload: {
+              period_id: 0,
+              allPeriods: data.periods,
+            },
+          });
         }
       })
     );
-  }, [fetch, getPeriods]);
+  }, [fetch, getPeriods, heatingDispatch]);
 
   const debounceTimeout = React.useRef<Timeout | null>(null);
 
   const update = React.useCallback(
     async (frozenState) => {
+      console.log("engaging lock");
+      heatingDispatch({
+        type: LOCK,
+        payload: {},
+      });
       console.log("updating period");
       const data = {
         period_id: frozenState.period_id,
@@ -85,15 +90,15 @@ export function HeatingSettingsContainer({ currentSystem }: Props) {
       fetch("/v2/heating/times", "PUT", data)
         .then((res) => {
           if (res.status === 200) {
-            setGetPeriods(p => !p);
+            setGetPeriods((p) => !p);
           } else if (res.status === 422) {
             res.json().then((resJson: { detail: string | { msg: string } }) => {
-              setContainerState((p) => ({
-                ...p,
-                selectedPeriod: p.allPeriods.filter(
-                  (period) => period.period_id === data.period_id
-                )[0],
-              }));
+              heatingDispatch({
+                type: SELECT,
+                payload: {
+                  period_id: data.period_id,
+                },
+              });
               typeof resJson.detail === "string" ||
               resJson.detail.msg?.length > 0
                 ? enqueueSnackbar(
@@ -107,17 +112,21 @@ export function HeatingSettingsContainer({ currentSystem }: Props) {
           }
         })
         .finally(() => {
-          console.log("freeing lock (done)");
-          lock.current = false;
+          console.log("freeing lock");
+          heatingDispatch({
+            type: UNLOCK,
+            payload: {},
+          });
+          console.log("done");
           console.groupEnd();
         });
     },
-    [enqueueSnackbar, fetch]
+    [enqueueSnackbar, fetch, heatingDispatch]
   );
 
   const debounce = React.useCallback(
     (period: TimePeriod | null) => {
-      lock.current = true;
+      if (heatingContext.lock) return;
       clearTimeout(debounceTimeout.current as Timeout);
       if (period) {
         debounceTimeout.current = setTimeout(() => update(period), 1000);
@@ -126,65 +135,9 @@ export function HeatingSettingsContainer({ currentSystem }: Props) {
     [update]
   );
 
-  function selectPeriod(period: TimePeriod) {
-    setContainerState({
-      ...containerState,
-      selectedPeriod: period,
-    });
-  }
-
-  function setTarget(target: number) {
-    setContainerState({
-      ...containerState,
-      selectedPeriod: {
-        ...containerState.selectedPeriod,
-        target: target,
-      } as TimePeriod,
-    });
-  }
-
-  interface StateCheck {
-    time_on: string;
-    time_off: string;
-    target: number;
-    heating_system_id: number;
-  }
-
-  const mapCheckers = React.useCallback(function (
-    period: TimePeriod
-  ): StateCheck {
-    return {
-      time_on: period.time_on,
-      time_off: period.time_off,
-      target: period.target,
-      heating_system_id: period.heating_system_id,
-    };
-  },
-  []);
-
   React.useEffect(() => {
-    if (containerState.selectedPeriod) {
-      const selectedPeriod = containerState.selectedPeriod as TimePeriod;
-      const stateCheck = mapCheckers(selectedPeriod);
-      const allPeriods = containerState.allPeriods.map((p) => mapCheckers(p));
-      const diff = allPeriods.filter(
-        (obj) =>
-          obj.time_on === stateCheck.time_on &&
-          obj.time_off === stateCheck.time_off &&
-          obj.target === stateCheck.target &&
-          obj.heating_system_id === stateCheck.heating_system_id
-      );
-
-      if (diff.length === 0 && !lock.current) {
-        console.group("Update Flow:");
-        console.log("debouncing");
-        console.log(selectedPeriod);
-        debounce(selectedPeriod);
-      } else if (!lock.current) {
-        clearTimeout(debounceTimeout.current as Timeout);
-      }
-    }
-  }, [debounce, mapCheckers, containerState.selectedPeriod]);
+    if (!heatingContext.lock) debounce(heatingContext.selectedPeriod);
+  }, [heatingContext.selectedPeriod, debounce]);
 
   return (
     <>
@@ -193,20 +146,9 @@ export function HeatingSettingsContainer({ currentSystem }: Props) {
         <div />
       </TopBar>
       <div className="heating-settings-container">
-        <MuiTimeslotPicker
-          timePeriod={containerState.selectedPeriod}
-          setter={setContainerState}
-        />
-        <TimeSlotsDisplay
-          timeSlots={containerState.allPeriods}
-          choosePeriod={selectPeriod}
-          selected={containerState.selectedPeriod}
-          systems={containerState.systems}
-        />
-        <TemperatureControl
-          timeSlot={containerState.selectedPeriod}
-          setter={setTarget}
-        />
+        <MuiTimeslotPicker />
+        <TimeSlotsDisplay />
+        <TemperatureControl />
       </div>
     </>
   );

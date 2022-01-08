@@ -1,25 +1,38 @@
 import * as React from "react";
 import { Slider } from "@mui/material";
-import {TimePeriod} from "../TimeBlock";
-import {IContainerState} from "./HeatingSettingsContainer";
+import {
+  UPDATE_TEMPERATURE,
+  useHeatingSettings,
+} from "../../../context/HeatingContext";
 
-interface Props {
-  timeSlot: TimePeriod | null;
-  setter: React.Dispatch<any>;
-}
+export function TemperatureControl() {
+  const { context, dispatch } = useHeatingSettings();
 
-export function TemperatureControl({ timeSlot, setter }: Props) {
+  const [value, setValue] = React.useState(
+    context.selectedPeriod?.target || 20
+  );
+
+  const handleChange = (e: Event, newVal: number | number[]) => {
+    setValue(newVal as number);
+    dispatch({
+      type: UPDATE_TEMPERATURE,
+      payload: {
+        period_id: context.selectedPeriod?.period_id || 3,
+        target: newVal as number,
+      },
+    });
+  };
 
   return (
-      <div className={"temperature-control"}>
-        <h1>{timeSlot?.target}°C</h1>
-        <Slider
-          disabled={!timeSlot}
-          max={30}
-          min={10}
-          value={timeSlot?.target || 20}
-          onChange={(e, newVal) => setter(newVal)}
-        />
-      </div>
+    <div className={"temperature-control"}>
+      <h1>{context.selectedPeriod?.target}°C</h1>
+      <Slider
+        disabled={!context.selectedPeriod}
+        max={30}
+        min={10}
+        value={value}
+        onChange={handleChange}
+      />
+    </div>
   );
 }

@@ -1,13 +1,11 @@
 import * as React from "react";
 import { Box, Tab, Tabs } from "@mui/material";
-import { TimePeriod } from "../TimeBlock";
-
-interface Props {
-  timeSlots: TimePeriod[];
-  choosePeriod: React.Dispatch<any>;
-  selected: TimePeriod | null;
-  systems: number[];
-}
+import {
+  useHeatingSettings,
+  SELECT,
+  LOCK,
+  UNLOCK,
+} from "../../../context/HeatingContext";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -22,8 +20,8 @@ function TabPanel(props: TabPanelProps) {
     <div
       role="tabpanel"
       hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
+      id={`tabpanel-${index}`}
+      aria-labelledby={`tab-${index}`}
       {...other}
     >
       {value === index && <Box>{children}</Box>}
@@ -31,30 +29,44 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-export function TimeSlotsDisplay({ timeSlots, choosePeriod, selected, systems }: Props) {
-  const [system, setSystem] = React.useState(selected?.heating_system_id || 3);
+export function TimeSlotsDisplay() {
+  const { context, dispatch } = useHeatingSettings();
+
+  const [system, setSystem] = React.useState(
+    context.selectedPeriod?.heating_system_id || 3
+  );
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setSystem(newValue + 3);
   };
 
   const handleClickOnPeriod = (event: React.MouseEvent) => {
+    dispatch({
+      type: LOCK,
+      payload: {},
+    });
     const target = event.target as HTMLElement;
-    const systemIndex = [
-      parseInt(target.id.split(" ")[0]),
-      parseInt(target.id.split(" ")[1]),
-    ];
-    const period = timeSlots.filter(
-      (slot) => slot.heating_system_id === systemIndex[0]
-    )[systemIndex[1]];
-    choosePeriod(period);
+    const period = context.allPeriods.filter(
+      (slot) => slot.period_id === parseInt(target.id)
+    )[0];
+    dispatch({
+      type: SELECT,
+      payload: {
+        period_id: period.period_id as number,
+      },
+    });
   };
+
+  React.useEffect(() => {
+    dispatch({
+      type: UNLOCK,
+      payload: {},
+    });
+  }, [dispatch, context.selectedPeriod?.period_id]);
 
   return (
     <>
-      <div
-        className={"slots-display-screen"}
-      >
+      <div className={"slots-display-screen"}>
         <Tabs
           value={system - 3}
           onChange={handleChange}
@@ -65,18 +77,28 @@ export function TimeSlotsDisplay({ timeSlots, choosePeriod, selected, systems }:
         </Tabs>
 
         {[3, 4].map((mappedSystem, index) => (
-          <TabPanel index={index} value={system - 3} key={`${index}-${mappedSystem}`}>
+          <TabPanel
+            index={index}
+            value={system - 3}
+            key={`${index}-${mappedSystem}`}
+          >
             <ul className="timeslot-list">
-              {timeSlots
-                .filter((slot) => slot.heating_system_id === mappedSystem)
-                .map((slot, indx) => (
-                  <li
-                    className={selected?.period_id === slot.period_id ? "selected" : ''}
-                    onClick={handleClickOnPeriod}
-                    key={`${slot.heating_system_id}-${indx}`}
-                    id={`${slot.heating_system_id} ${indx}`}
-                  >{`${slot.time_on} -> ${slot.time_off}`}</li>
-                ))}
+              {context.allPeriods
+                ? context.allPeriods
+                    .filter((slot) => slot.heating_system_id === mappedSystem)
+                    .map((slot, indx) => (
+                      <li
+                        className={
+                          context.selectedPeriod?.period_id === slot.period_id
+                            ? "selected"
+                            : ""
+                        }
+                        onClick={handleClickOnPeriod}
+                        key={`${slot.heating_system_id}-${indx}`}
+                        id={`${slot.period_id}`}
+                      >{`${slot.time_on} -> ${slot.time_off}`}</li>
+                    ))
+                : ""}
             </ul>
           </TabPanel>
         ))}

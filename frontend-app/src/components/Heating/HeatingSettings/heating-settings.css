@@ -7,6 +7,7 @@
   margin: auto;
   padding-top: 6rem;
   padding-right: 2rem;
+  height: 90vh;
 }
 
 .temperature-control {
@@ -69,12 +70,15 @@ li.selected {
 
 .selected::before {
   content: "\21E2";
-  margin: auto 0.25rem auto 0;
-  position: absolute;
-  left: 12%;
-  top: 0;
-  bottom: 0;
-  transform: translateY(4px);
+}
+
+.selected::after {
+  content: "\21E0";
+}
+
+.selected::before,
+.selected::after {
+  margin: 1rem;
 }
 
 .slots-display-screen {
@@ -83,7 +87,7 @@ li.selected {
   background: rgba(0, 0, 0, 0.3);
   border-radius: 5px;
   margin-top: 1.5rem;
-  margin-right: .25rem;
+  margin-right: 0.25rem;
   box-shadow: inset 0 0 10px rgba(0, 15, 0, 0.9);
   grid-column: 2;
 }
