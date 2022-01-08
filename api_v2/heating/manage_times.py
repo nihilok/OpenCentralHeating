@@ -13,7 +13,7 @@ async def get_times(household_id: int):
 async def check_conflicts(household_id: int, period: PHeatingPeriod):
     for p in await get_times(household_id):
         if p.period_id == period.period_id:
-            return
+            continue
         if p.heating_system.system_id == period.heating_system_id:
             if p.time_on <= period.time_on < p.time_off or p.time_on <= period.time_off < p.time_off:
                 for day in period.days.dict().items():
