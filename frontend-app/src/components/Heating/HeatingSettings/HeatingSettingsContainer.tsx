@@ -52,7 +52,6 @@ export function HeatingSettingsContainer() {
           heatingDispatch({
             type: UPDATE_ALL,
             payload: {
-              period_id: 0,
               allPeriods: data.periods,
             },
           });
