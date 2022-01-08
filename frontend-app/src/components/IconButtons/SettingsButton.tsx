@@ -4,12 +4,7 @@ import { IconButton } from "@mui/material";
 import { Settings } from "@mui/icons-material";
 import { useHistory } from "react-router-dom";
 
-interface Props {
-  helpMode: boolean;
-  setHelpMode: (state: boolean) => void;
-}
-
-export function SettingsButton({ helpMode, setHelpMode }: Props) {
+export function SettingsButton() {
   let history = useHistory();
 
   const handleClick = () => {
@@ -21,7 +16,6 @@ export function SettingsButton({ helpMode, setHelpMode }: Props) {
       <IconButton
         onClick={handleClick}
         className={"help-button"}
-        color={helpMode ? "primary" : "default"}
         aria-label="help"
         component="div"
       >

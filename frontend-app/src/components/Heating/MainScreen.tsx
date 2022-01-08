@@ -28,7 +28,7 @@ export interface APIResponse {
   target: number;
 }
 
-export function SettingsForm() {
+export function MainScreen() {
   const fetch = useFetchWithToken();
   const [readings, setReadings] = React.useState({
     temperature: 0,
@@ -91,7 +91,7 @@ export function SettingsForm() {
     <FullScreenComponent>
       <TopBar>
         <WeatherButton />
-        <SettingsButton helpMode={helpMode} setHelpMode={setHelpMode} />
+        <SettingsButton />
       </TopBar>
       <form className="heating-settings">
         {isLoading ? (
@@ -100,15 +100,15 @@ export function SettingsForm() {
           <>
             <div className="flex flex-col space-evenly">
               <Button
-                variant='text'
-                color='primary'
+                variant="text"
+                color="primary"
                 type="button"
                 onClick={handleSystemChange}
                 style={{
                   cursor: "pointer",
-                  width: 'max-content',
-                  margin: 'auto',
-                  paddingLeft: '1.25rem',
+                  width: "max-content",
+                  margin: "auto",
+                  paddingLeft: "1.25rem",
                 }}
               >
                 <SwapVertIcon style={{ marginLeft: "-1rem" }} />

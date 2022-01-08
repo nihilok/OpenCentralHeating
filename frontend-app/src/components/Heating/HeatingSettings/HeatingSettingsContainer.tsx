@@ -1,5 +1,4 @@
 import * as React from "react";
-import { TimePeriod } from "../TimeBlock";
 import "./heating-settings.css";
 import { MuiTimeslotPicker } from "./MuiTimeslotPicker";
 import { TimeSlotsDisplay } from "./TimeSlotsDisplay";
@@ -9,6 +8,7 @@ import { useSnackbar } from "notistack";
 import { TopBar } from "../../Custom/TopBar";
 import { BackButton } from "../../IconButtons/BackButton";
 import {
+  TimePeriod,
   LOCK,
   SELECT,
   UNLOCK,

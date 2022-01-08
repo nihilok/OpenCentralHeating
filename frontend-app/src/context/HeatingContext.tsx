@@ -1,5 +1,12 @@
 import * as React from "react";
-import { TimePeriod } from "../components/Heating/TimeBlock";
+
+export interface TimePeriod {
+  time_on: string;
+  time_off: string;
+  target: number;
+  period_id?: number;
+  heating_system_id: number;
+}
 
 interface IHeatingContext {
   lock: boolean;
