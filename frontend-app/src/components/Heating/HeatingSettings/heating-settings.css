@@ -68,19 +68,6 @@ li.selected {
   );
 }
 
-.selected::before {
-  content: "\21E2";
-}
-
-.selected::after {
-  content: "\21E0";
-}
-
-.selected::before,
-.selected::after {
-  margin: 1rem;
-}
-
 .slots-display-screen {
   display: flex;
   flex-direction: column;
