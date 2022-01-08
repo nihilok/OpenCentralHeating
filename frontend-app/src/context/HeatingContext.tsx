@@ -25,7 +25,6 @@ export const UPDATE_TEMPERATURE = "UPDATE_TEMPERATURE";
 export const UPDATE_ALL = "UPDATE_ALL";
 export const NEW_PERIOD = "NEW_PERIOD"; // TODO: not yet implemented
 export const DELETE_PERIOD = "DELETE_PERIOD"; // TODO: not yet implemented
-const ZERO = 0;
 
 interface Payload {
   period_id?: number;
