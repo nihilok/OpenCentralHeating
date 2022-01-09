@@ -47,14 +47,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 
 .temperature-control > h1 {
-  font-size: calc(9vmin + 1rem);
-  width: 4ch;
-  margin-right: 1rem;
-
-  text-align: right;
+  font-size: calc(12vmin + 1rem);
 }
 
 li.selected {

@@ -23,6 +23,10 @@ export function TemperatureControl() {
     });
   };
 
+  React.useEffect(() => {
+    setValue(heating.selectedPeriod?.target as number)
+  }, [heating.revert])
+
   return (
     <div className={"temperature-control"}>
       <h1>{heating.selectedPeriod?.target}°C</h1>
