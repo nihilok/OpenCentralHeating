@@ -20,6 +20,7 @@ interface IHeatingContext {
 export const LOCK = "LOCK";
 export const UNLOCK = "UNLOCK";
 export const SELECT = "SELECT";
+export const SET_SYSTEM = "SET_SYSTEM";
 export const UPDATE_TIMES = "UPDATE_TIMES";
 export const UPDATE_TEMPERATURE = "UPDATE_TEMPERATURE";
 export const UPDATE_ALL = "UPDATE_ALL";
@@ -32,12 +33,14 @@ interface Payload {
   time_off?: string;
   target?: number;
   allPeriods?: TimePeriod[];
+  currentSystem?: number;
 }
 
 type Action =
   | { type: typeof LOCK; payload: Payload }
   | { type: typeof UNLOCK; payload: Payload }
   | { type: typeof SELECT; payload: Payload }
+  | { type: typeof SET_SYSTEM; payload: Payload }
   | { type: typeof UPDATE_TIMES; payload: Payload }
   | { type: typeof UPDATE_TEMPERATURE; payload: Payload }
   | { type: typeof UPDATE_ALL; payload: Payload }
@@ -74,6 +77,11 @@ const reducer = (state: IHeatingContext, { payload, type }: Action) => {
           (p) => p.period_id === payload.period_id
         )[0],
         revert: !state.revert,
+      };
+    case SET_SYSTEM:
+      return {
+        ...state,
+        currentSystem: payload.currentSystem,
       };
     case UPDATE_TIMES:
       return {

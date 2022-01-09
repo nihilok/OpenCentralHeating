@@ -14,6 +14,7 @@ import { ProgramOnOffSwitch } from "./ProgramOnOffSwitch";
 import { SettingsButton } from "../IconButtons/SettingsButton";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
 import { Button } from "@mui/material";
+import { SET_SYSTEM, useHeatingSettings } from "../../context/HeatingContext";
 
 interface Sensors {
   temperature: number;
@@ -44,6 +45,7 @@ export function MainScreen() {
   const [systemId, setSystemId] = React.useState(
     parseInt(localStorage.getItem("currentSystem") as string) || 3
   );
+  const { dispatch: heatingSettingsDispatch } = useHeatingSettings();
 
   const handleSystemChange = () => {
     if (systemId === 3) {
@@ -54,6 +56,15 @@ export function MainScreen() {
       setSystemId(3);
     }
   };
+
+  React.useEffect(() => {
+    heatingSettingsDispatch({
+      type: SET_SYSTEM,
+      payload: {
+        currentSystem: systemId,
+      },
+    });
+  }, [systemId, heatingSettingsDispatch]);
 
   const parseData = React.useCallback((data: APIResponse) => {
     checkResponse(data.sensor_readings, setReadings);

@@ -4,7 +4,7 @@ import {
   useHeatingSettings,
   SELECT,
   LOCK,
-  UNLOCK,
+  UNLOCK, SET_SYSTEM,
 } from "../../../context/HeatingContext";
 
 interface TabPanelProps {
@@ -33,11 +33,17 @@ export function TimeSlotsDisplay() {
   const { heating, dispatch } = useHeatingSettings();
 
   const [system, setSystem] = React.useState(
-    heating.selectedPeriod?.heating_system_id || 3
+    heating.selectedPeriod?.heating_system_id || heating.currentSystem
   );
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setSystem(newValue + 3);
+    dispatch({
+      type: SET_SYSTEM,
+      payload: {
+        currentSystem: newValue + 3,
+      },
+    });
   };
 
   const handleClickOnPeriod = (event: React.MouseEvent) => {

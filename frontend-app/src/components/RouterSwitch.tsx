@@ -7,8 +7,8 @@ import { HeatingContextProvider } from "../context/HeatingContext";
 export default function RouterSwitch() {
   return (
     <Switch>
-      <Route exact path="/" component={MainScreen} />
       <HeatingContextProvider>
+        <Route exact path="/" component={MainScreen} />
         <Route exact path="/times" component={HeatingSettingsContainer} />
       </HeatingContextProvider>
     </Switch>
