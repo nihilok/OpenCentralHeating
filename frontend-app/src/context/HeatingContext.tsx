@@ -98,7 +98,6 @@ const reducer = (state: IHeatingContext, { payload, type }: Action) => {
         selectedPeriod: { ...state.selectedPeriod, target: payload.target },
       };
     case UPDATE_ALL:
-      console.log(payload.allPeriods);
       return {
         ...state,
         allPeriods: payload.allPeriods,

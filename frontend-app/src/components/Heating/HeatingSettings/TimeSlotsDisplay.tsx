@@ -4,8 +4,10 @@ import {
   useHeatingSettings,
   SELECT,
   LOCK,
-  UNLOCK, SET_SYSTEM,
+  UNLOCK,
+  SET_SYSTEM,
 } from "../../../context/HeatingContext";
+import { leftPad } from "../../../lib/helpers";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -18,9 +20,9 @@ function TabPanel(props: TabPanelProps) {
 
   return (
     <div
-      role="tabpanel"
+      role="tab-panel"
       hidden={value !== index}
-      id={`tabpanel-${index}`}
+      id={`tab-panel-${index}`}
       aria-labelledby={`tab-${index}`}
       {...other}
     >
@@ -69,6 +71,43 @@ export function TimeSlotsDisplay() {
       payload: {},
     });
   }, [dispatch, heating.selectedPeriod?.period_id]);
+
+  React.useEffect(() => {
+    let currentTime: Date | number = new Date();
+    const hours = currentTime.getHours();
+    const minutes = currentTime.getMinutes();
+    const timeString = `01 Jan 1970 ${leftPad(hours)}:${leftPad(
+      minutes
+    )}:00 GMT`;
+    currentTime = Date.parse(timeString);
+    if (heating.allPeriods) {
+      const currentPeriod = heating.allPeriods.filter((period) => {
+        const periodSplitTimeOn = period.time_on.split(":");
+        const periodSplitTimeOff = period.time_off.split(":");
+        const timeOnString = `01 Jan 1970 ${leftPad(
+          parseInt(periodSplitTimeOn[0])
+        )}:${leftPad(parseInt(periodSplitTimeOn[1]))}:00 GMT`;
+        const timeOffString = `01 Jan 1970 ${leftPad(
+          parseInt(periodSplitTimeOff[0])
+        )}:${leftPad(parseInt(periodSplitTimeOff[1]))}:00 GMT`;
+        const timeOn = Date.parse(timeOnString);
+        const timeOff = Date.parse(timeOffString);
+        return (
+          period.heating_system_id === heating.currentSystem &&
+          timeOn <= currentTime &&
+          currentTime < timeOff
+        );
+      })[0];
+      console.log(currentPeriod);
+      if (currentPeriod)
+        dispatch({
+          type: SELECT,
+          payload: {
+            period_id: currentPeriod.period_id as number,
+          },
+        });
+    }
+  }, []);
 
   return (
     <>

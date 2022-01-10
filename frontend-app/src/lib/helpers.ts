@@ -16,3 +16,8 @@ export function checkTimeStringWithinLimit(on: string, off: string) {
 export function checkResponse(data: any, setState: (input: any)=>void) {
   if (data !== null && data !== undefined) setState(data)
 }
+
+export function leftPad(digits: number) {
+  if (digits.toString().length === 1) return `${0}${digits}`
+  return digits
+}
