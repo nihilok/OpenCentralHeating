@@ -58,9 +58,9 @@ class HeatingSystem:
         loop = asyncio.get_running_loop()
         loop.create_task(self.main_loop(self.PROGRAM_LOOP_INTERVAL))
 
-    def get_measurements(self) -> dict:
+    async def get_measurements(self) -> dict:
         try:
-            res = get_json(self.temperature_url)
+            res = await get_json(self.temperature_url)
             if res.get("temperature"):
                 self.reset_error_state()
             return res
@@ -99,7 +99,6 @@ class HeatingSystem:
 
     @property
     def temperature(self) -> float:
-        self.measurements = self.get_measurements()
         if self.measurements is not None:
             return float(self.measurements.get("temperature", 0))
 
@@ -137,6 +136,7 @@ class HeatingSystem:
             self.pi.write(self.gpio_pin, 1 if self.PIN_STATE_ON == 0 else 0)
 
     async def thermostat_control(self):
+        self.measurements = await self.get_measurements()
         check = self.too_cold
         if check is True:
             logger.debug("too cold")
