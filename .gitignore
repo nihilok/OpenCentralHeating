@@ -52,4 +52,18 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
-db.sqlite*
+
+*.sqlite3
+*.sqlite3*
+.idea/
+backup/dbbackup/
+env/
+frontend-app/node_modules/
+migrations/
+project.tar.gz
+run.sh
+server_db.sqlite3
+test_api/
+v2_server_db.sqlite3
+v2_server_db.sqlite3-shm
+v2_server_db.sqlite3-wal
