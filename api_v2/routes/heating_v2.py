@@ -121,7 +121,7 @@ async def update_period(
     except ValueError as e:
         raise HTTPException(422, detail=str(e))
     hs = await get_system_from_memory_http(period.heating_system_id, user.household_id)
-    await hs.get_current_time_period()
+    await hs.main_task()
     return PHeatingPeriod(**p.__dict__)
 
 
