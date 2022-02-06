@@ -11,7 +11,7 @@ import requests
 from .fake_pi import fake_pi
 from .manage_times import check_times, get_times, new_time
 from ..models import PHeatingPeriod
-from ..utils import send_telegram_message  # , BritishTime
+from ..utils import send_telegram_message, get_json  # , BritishTime
 from ..logger import get_logger
 from ..secrets import initialized_config as config
 
@@ -60,10 +60,10 @@ class HeatingSystem:
 
     def get_measurements(self) -> dict:
         try:
-            res = requests.get(self.temperature_url, timeout=5)
-            if res.status_code == 200:
+            res = get_json(self.temperature_url)
+            if res.get("temperature"):
                 self.reset_error_state()
-            return res.json()
+            return res
         except Exception as e:
             self.handle_request_errors(e)
 
