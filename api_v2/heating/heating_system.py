@@ -103,9 +103,6 @@ class HeatingSystem:
         state = self.pi.read(self.gpio_pin)
         return not state if self.PIN_STATE_ON == 0 else not not state
 
-    async def within_time_period(self):
-        return await self.complex_check_time()
-
     @property
     def too_cold(self) -> Optional[bool]:
         if self.current_period is not None:
@@ -154,7 +151,7 @@ class HeatingSystem:
     async def main_task(self):
         logger.debug("Performing main task")
         if self.program_on:
-            await self.within_time_period()
+            await self.get_current_time_period()
         await self.thermostat_control()
 
     async def main_loop(self, interval: int = 60):
@@ -205,7 +202,7 @@ class HeatingSystem:
             logger.info("Advance cancelled")
         await self.main_task()
 
-    async def complex_check_time(self):
+    async def get_current_time_period(self):
         logger.debug("Checking times")
         times = await get_times(self.household_id)
         self.current_period = await check_times(times, self.system_id)
@@ -215,8 +212,6 @@ class HeatingSystem:
             )
             if self.advance_on:
                 await self.cancel_advance()
-            return True
-        return False
 
     async def new_time(self, period: PHeatingPeriod, user_id: int):
         _time = await new_time(self.household_id, period, user_id)
