@@ -114,15 +114,15 @@ class HeatingSystem:
             target = self.MINIMUM_TEMP
         try:
             current = self.temperature
+            if target - self.THRESHOLD > current:
+                return True
+            elif target <= current:
+                return False
         except requests.exceptions.ConnectTimeout:
             return
 
         msg = f"target: {target}, current: {current}"
         logger.debug(msg)
-        if target - self.THRESHOLD > current:
-            return True
-        elif target <= current:
-            return False
 
     def switch_on_relay(self):
         if not self.relay_state:
