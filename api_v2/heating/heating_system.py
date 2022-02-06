@@ -17,7 +17,6 @@ from ..secrets import initialized_config as config
 
 
 logger = get_logger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 class HeatingSystem:

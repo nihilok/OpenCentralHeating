@@ -25,7 +25,7 @@ def get_logger(name=__name__):
         pass
 
     ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO)
+    ch.setLevel(logging.DEBUG)
 
     ch.setFormatter(formatter)
 
