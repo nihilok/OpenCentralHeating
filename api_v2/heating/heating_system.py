@@ -83,6 +83,7 @@ class HeatingSystem:
         if log_msg is not None:
             logger.error(log_msg)
             send_telegram_message(log_msg)
+            self.switch_off_relay()
             raise e
 
     def reset_error_state(self):
