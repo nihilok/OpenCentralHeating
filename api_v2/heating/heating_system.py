@@ -1,5 +1,6 @@
 import asyncio
 import json
+
 # import time
 from typing import Optional
 
@@ -44,12 +45,9 @@ class HeatingSystem:
             self.pi = pigpio.pi(raspberry_pi_ip)
         self.gpio_pin = gpio_pin
         self.temperature_url = temperature_url
-        self.errors = {
-                    "temporary": False,
-                    "initial": False
-                }
+        self.errors = {"temporary": False, "initial": False}
         self.system_id = system_id
-        self.measurements = None 
+        self.measurements = None
         self.program_on = json.loads(self.config.get("program_on", "false"))
         # self.advance_on = None
         # self.advance_end: int = 0
@@ -73,10 +71,14 @@ class HeatingSystem:
             if self.errors["initial"]:
                 return
             self.errors["initial"] = True
-            log_msg = f"{__name__}: {e.__class__.__name__}: {str(e)} ({self.temperature_url})"
+            log_msg = (
+                f"{__name__}: {e.__class__.__name__}: {str(e)} ({self.temperature_url})"
+            )
         elif not self.errors["temporary"]:
             self.errors["temporary"] = True
-            log_msg = f"{__name__}: {e.__class__.__name__}: {str(e)} ({self.temperature_url})"
+            log_msg = (
+                f"{__name__}: {e.__class__.__name__}: {str(e)} ({self.temperature_url})"
+            )
         if log_msg is not None:
             logger.error(log_msg)
             send_telegram_message(log_msg)
