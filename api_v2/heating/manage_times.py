@@ -6,7 +6,6 @@ from api_v2.models import PHeatingPeriod, HeatingPeriod, HeatingPeriodModelCreat
 
 
 async def get_times(household_id: int, checking_period: Optional[int] = None):
-
     qs = HeatingPeriod.filter(household_id=household_id)
     if checking_period is not None:
         qs = qs.exclude(period_id=checking_period)
@@ -15,19 +14,12 @@ async def get_times(household_id: int, checking_period: Optional[int] = None):
 
 
 async def check_conflicts(household_id: int, period: PHeatingPeriod):
-    for p in await get_times(household_id, period.period_id):
-        print(p.period_id)
-        if p.heating_system.system_id == period.heating_system_id:
-            start_1 = p.time_on
-            start_2 = period.time_on
-            end_1 = p.time_off
-            end_2 = period.time_off
-
-            if (start_1 < end_2) and (end_1 > start_2):
-                for day in period.days.dict().items():
-                    if day[1]:
-                        if p.days[day[0]]:
-                            raise ValueError(f"Period overlaps with another")
+    for p in [period for period in await get_times(household_id, period.period_id) if p.heating_system.system_id == period.heating_system_id]:
+        start_1, start_2 = p.time_on, period.time_on
+        end_1, end_2 = p.time_off, period.time_off
+        if (start_1 < end_2) and (end_1 > start_2):
+            if len([day for day in period.days.dict().items() if day[1] and p.days[day[0]]]):
+                raise ValueError(f"Period overlaps with another")
 
 
 async def new_time(household_id: int, period: PHeatingPeriod, user_id: int):
