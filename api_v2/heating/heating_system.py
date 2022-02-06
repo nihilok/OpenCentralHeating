@@ -16,7 +16,7 @@ from ..logger import get_logger
 from ..secrets import initialized_config as config
 
 
-logger = get_logger(__name__)
+logger = get_logger(__name__, level=logging.INFO)
 
 
 class HeatingSystem:
