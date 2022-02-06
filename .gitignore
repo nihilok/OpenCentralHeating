@@ -67,3 +67,5 @@ test_api/
 v2_server_db.sqlite3
 v2_server_db.sqlite3-shm
 v2_server_db.sqlite3-wal
+bak
+scripts/db_backup.sh
