@@ -14,11 +14,21 @@ async def get_times(household_id: int, checking_period: Optional[int] = None):
 
 
 async def check_conflicts(household_id: int, period: PHeatingPeriod):
-    for p in [period for period in await get_times(household_id, period.period_id) if p.heating_system.system_id == period.heating_system_id]:
-        start_1, start_2 = p.time_on, period.time_on
-        end_1, end_2 = p.time_off, period.time_off
+    for p_db in [
+        p
+        for p in await get_times(household_id, period.period_id)
+        if p.heating_system.system_id == period.heating_system_id
+    ]:
+        start_1, start_2 = p_db.time_on, period.time_on
+        end_1, end_2 = p_db.time_off, period.time_off
         if (start_1 < end_2) and (end_1 > start_2):
-            if len([day for day in period.days.dict().items() if day[1] and p.days[day[0]]]):
+            if len(
+                [
+                    day
+                    for day in period.days.dict().items()
+                    if day[1] and p_db.days[day[0]]
+                ]
+            ):
                 raise ValueError(f"Period overlaps with another")
 
 
