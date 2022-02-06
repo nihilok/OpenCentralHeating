@@ -2,6 +2,7 @@ import asyncio
 import json
 
 # import time
+import logging
 from typing import Optional
 
 import pigpio
@@ -16,6 +17,7 @@ from ..secrets import initialized_config as config
 
 
 logger = get_logger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class HeatingSystem:
@@ -97,7 +99,8 @@ class HeatingSystem:
     @property
     def temperature(self) -> float:
         self.measurements = self.get_measurements()
-        return float(self.measurements["temperature"])
+        if self.measurements is not None:
+            return float(self.measurements.get("temperature", 0))
 
     @property
     def relay_state(self) -> bool:
@@ -110,7 +113,11 @@ class HeatingSystem:
             target = self.current_period.target
         else:
             target = self.MINIMUM_TEMP
-        current = self.temperature
+        try:
+            current = self.temperature
+        except requests.exceptions.ConnectTimeout:
+            return
+
         msg = f"target: {target}, current: {current}"
         logger.debug(msg)
         if target - self.THRESHOLD > current:
