@@ -44,9 +44,12 @@ class HeatingSystem:
             self.pi = pigpio.pi(raspberry_pi_ip)
         self.gpio_pin = gpio_pin
         self.temperature_url = temperature_url
-        self.error: list[bool, bool] = [False, False]
+        self.errors = {
+                    "temporary": False,
+                    "initial": False
+                }
         self.system_id = system_id
-        self.measurements = self.get_measurements()
+        self.measurements = None 
         self.program_on = json.loads(self.config.get("program_on", "false"))
         self.advance_on = None
         self.advance_end: int = 0
@@ -57,34 +60,43 @@ class HeatingSystem:
         loop.create_task(self.main_loop(self.PROGRAM_LOOP_INTERVAL))
 
     def get_measurements(self) -> dict:
-        """Gets measurements from temperature sensor and handles errors,
-        by returning the last known set of measurements or a default"""
         try:
-            req = requests.get(self.temperature_url)
-            if req.status_code == 200 and any(self.error):
-                self.error = [False, False]
-                send_telegram_message(f"Contact with {self.temperature_url} resumed")
-            self.measurements = req.json()
+            res = requests.get(self.temperature_url, timeout=5)
+            if res.status_code == 200:
+                self.reset_error_state()
+            return res.json()
         except Exception as e:
-            if not self.error[0]:
-                log_msg = f"{__name__}: {e.__class__.__name__}: {str(e)} ({self.temperature_url})"
-                logger.error(log_msg)
-                send_telegram_message(log_msg)
-                self.error[0] = True
-        try:
-            return self.measurements
-        except AttributeError as e:
-            if not self.error[1]:
-                log_msg = f"{__name__}: {e.__class__.__name__}: No measurements found on first load ({self.system_id=})"
-                logger.error(log_msg)
-                send_telegram_message(log_msg)
-                self.error[1] = True
-                logger.warning("Using default measurements")
-            return {"temperature": 20, "pressure": 0, "humidity": 0}
+            self.handle_request_errors(e)
+
+    def handle_request_errors(self, e):
+        log_msg = None
+        if self.measurements is None:
+            if self.errors["initial"]:
+                return
+            self.errors["initial"] = True
+            log_msg = f"{__name__}: {e.__class__.__name__}: {str(e)} ({self.temperature_url})"
+        elif not self.errors["temporary"]:
+            self.errors["temporary"] = True
+            log_msg = f"{__name__}: {e.__class__.__name__}: {str(e)} ({self.temperature_url})"
+        if log_msg is not None:
+            logger.error(log_msg)
+            send_telegram_message(log_msg)
+            raise e
+
+    def reset_error_state(self):
+        previous = False
+        for key in self.errors.keys():
+            if self.errors[key]:
+                previous = True
+                self.errors[key] = False
+        if previous:
+            send_telegram_message(f"Contact with {self.temperature_url} resumed")
+            logger.warning(f"Contact with {self.temperature_url} resumed")
 
     @property
     def temperature(self) -> float:
-        return float(self.get_measurements()["temperature"])
+        self.measurements = self.get_measurements()
+        return float(self.measurements["temperature"])
 
     @property
     def relay_state(self) -> bool:
@@ -119,7 +131,7 @@ class HeatingSystem:
             self.pi.write(self.gpio_pin, 1 if self.PIN_STATE_ON == 0 else 0)
 
     def handle_errors(self):
-        if any(self.error):
+        if any(self.errors.values()):
             if self.relay_state:
                 logger.warning(
                     "Switching off relay due to error reading from temperature sensor "
