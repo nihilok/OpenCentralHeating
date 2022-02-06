@@ -36,7 +36,8 @@ class HeatingSystem:
         raspberry_pi_ip: Optional[str] = None,
     ):
         logger.info(
-            f"Creating new instance of HeatingSystem\n(GPIO_PIN: {gpio_pin}, TEMPERATURE_URL: {temperature_url})"
+            f"Creating new instance of HeatingSystem\n"
+            f"\t  (GPIO_PIN: {gpio_pin}, TEMPERATURE_URL: {temperature_url})"
         )
         if test:
             self.pi = fake_pi()

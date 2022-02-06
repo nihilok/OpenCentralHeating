@@ -36,3 +36,8 @@ def get_logger(name=__name__, level=logging.DEBUG):
     logger.addHandler(ch)
 
     return logger
+
+
+if __name__ == "__main__":
+    l = get_logger('test')
+    l.info("hello\n\t\t  hello")
