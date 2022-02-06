@@ -11,7 +11,7 @@ import requests
 from .fake_pi import fake_pi
 from .manage_times import check_times, get_times, new_time
 from ..models import PHeatingPeriod
-from ..utils import send_telegram_message  # , BritishTime
+from ..utils import send_telegram_message, get_json  # , BritishTime
 from ..logger import get_logger
 from ..secrets import initialized_config as config
 
@@ -58,12 +58,12 @@ class HeatingSystem:
         loop = asyncio.get_running_loop()
         loop.create_task(self.main_loop(self.PROGRAM_LOOP_INTERVAL))
 
-    def get_measurements(self) -> dict:
+    async def get_measurements(self) -> dict:
         try:
-            res = requests.get(self.temperature_url, timeout=5)
-            if res.status_code == 200:
+            res = await get_json(self.temperature_url)
+            if res.get("temperature"):
                 self.reset_error_state()
-            return res.json()
+            return res
         except Exception as e:
             self.handle_request_errors(e)
 
@@ -99,7 +99,6 @@ class HeatingSystem:
 
     @property
     def temperature(self) -> float:
-        self.measurements = self.get_measurements()
         if self.measurements is not None:
             return float(self.measurements.get("temperature", 0))
 
@@ -137,6 +136,7 @@ class HeatingSystem:
             self.pi.write(self.gpio_pin, 1 if self.PIN_STATE_ON == 0 else 0)
 
     async def thermostat_control(self):
+        self.measurements = await self.get_measurements()
         check = self.too_cold
         if check is True:
             logger.debug("too cold")

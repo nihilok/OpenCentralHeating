@@ -35,7 +35,7 @@ async def get_heating_info(
 ):
     if system_id is not None:
         hs = await get_system_from_memory_http(system_id, user.household_id)
-        measurements = hs.get_measurements()
+        measurements = await hs.get_measurements()
         if any(hs.errors.values()):
             return JSONResponse(status_code=500, content={"message": f"System {system_id} not responding"})
         system_info = SystemInfo(
@@ -54,7 +54,7 @@ async def get_heating_info(
                 system_from_db.system_id, user.household_id
             )
             system_info = SystemInfo(
-                sensor_readings=system.get_measurements() or {},
+                sensor_readings = await system.get_measurements() or {},
                 relay_on=system.relay_state,
                 program_on=system.program_on,
                 target=system.current_period.target if system.current_period else 5,
