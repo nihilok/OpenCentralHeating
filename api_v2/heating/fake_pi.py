@@ -1,5 +1,4 @@
 class FakePi:
-
     def read(self, *args, **kwargs):
         return 1
 
