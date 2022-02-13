@@ -23,11 +23,11 @@ async def check_conflicts(household_id: int, period: PHeatingPeriod):
         end_1, end_2 = p_db.time_off, period.time_off
         if (start_1 < end_2) and (end_1 > start_2):
             if len(
-                [
-                    day
-                    for day in period.days.dict().items()
-                    if day[1] and p_db.days[day[0]]
-                ]
+                    [
+                        day
+                        for day in period.days.dict().items()
+                        if day[1] and p_db.days[day[0]]
+                    ]
             ):
                 raise ValueError(f"Period overlaps with another")
 

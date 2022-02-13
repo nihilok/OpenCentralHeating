@@ -1,6 +1,3 @@
-
-
-
 class FakePi:
 
     def read(self, *args, **kwargs):
@@ -8,5 +5,6 @@ class FakePi:
 
     def write(self, *args, **kwargs):
         pass
+
 
 fake_pi = FakePi

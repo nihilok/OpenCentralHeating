@@ -15,7 +15,6 @@ from ..utils import send_telegram_message, get_json  # , BritishTime
 from ..logger import get_logger
 from ..secrets import initialized_config as config
 
-
 logger = get_logger(__name__, level=logging.INFO)
 
 
@@ -27,13 +26,13 @@ class HeatingSystem:
     PIN_STATE_ON = 0
 
     def __init__(
-        self,
-        gpio_pin: int,
-        temperature_url: str,
-        system_id: int,
-        household_id: int,
-        test: bool = False,
-        raspberry_pi_ip: Optional[str] = None,
+            self,
+            gpio_pin: int,
+            temperature_url: str,
+            system_id: int,
+            household_id: int,
+            test: bool = False,
+            raspberry_pi_ip: Optional[str] = None,
     ):
         logger.info(
             f"Creating new instance of HeatingSystem\n"
