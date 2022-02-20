@@ -129,6 +129,10 @@
     text-align: center;
 }
 
+.gauges-container p {
+    margin-top: 0;
+}
+
 @media (min-width: 768px) {
     .gauges-container {
         display: flex;

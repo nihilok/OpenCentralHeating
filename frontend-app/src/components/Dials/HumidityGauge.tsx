@@ -15,7 +15,7 @@ function HumidityGauge({ humidity }: Props) {
         colors={["#6C4FF3"]}
         arcWidth={0.3}
         animate={false}
-        style={{ height: "9rem" }}
+        style={{ height: "8.5rem" }}
       />
       <p>Humidity</p>
     </div>

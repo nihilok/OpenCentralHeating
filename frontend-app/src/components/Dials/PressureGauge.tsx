@@ -56,7 +56,7 @@ function PressureGauge({ pressure }: Props) {
         arcWidth={0.3}
         formatTextValue={formatTextValue}
         animate={false}
-        style={{ height: "9rem" }}
+        style={{ height: "8.5rem" }}
       />
       <p>Pressure</p>
     </div>
