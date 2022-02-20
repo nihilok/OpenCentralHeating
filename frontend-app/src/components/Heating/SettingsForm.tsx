@@ -139,7 +139,7 @@ export function SettingsForm() {
               {/*<Barometer readings={readings}/>*/}
             </div>
           </form>
-          <div>
+          <div className={"gauges-container"}>
             <PressureGauge pressure={readings.pressure}/>
             <HumidityGauge humidity={readings.humidity / 100}/>
           </div>
