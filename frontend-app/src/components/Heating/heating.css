@@ -125,6 +125,59 @@
     padding-top: 1rem;
 }
 
+.time-slot__labels {
+    display: flex;
+    width: 100%;
+    text-align: center;
+}
+
+.time-slot__labels > div {
+    width: calc(100% / 24);
+}
+
+.time-slot__wrapper {
+    margin: 3rem auto;
+    min-width: 90%;
+    max-width: 95vw;
+    min-height: 24rem;
+}
+
+.time-slot__bars {
+    display: flex;
+}
+
+.time-slot__bars > div {
+    border: 1px solid black;
+    background: white;
+    height: 3rem;
+    width: calc(100% / 24);
+}
+
+.MuiSlider-markLabel {
+    color: white !important;
+}
+
+.time-block__grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    width: 100%;
+    height: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    place-items: center;
+}
+
+.time-block-right__grid {
+    display: grid;
+    grid-template-rows: 2fr 3fr;
+    text-align: right;
+    max-width: 50vw;
+    justify-content: center;
+}
+
+
+
 .gauges-container {
     text-align: center;
 }
