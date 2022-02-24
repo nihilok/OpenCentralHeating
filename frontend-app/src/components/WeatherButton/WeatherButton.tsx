@@ -74,7 +74,7 @@ export function WeatherButton() {
 
     setSunrise(`${riseDate.getHours()}:${riseMins}`);
     setSunset(`${setDate.getHours()}:${setMins}`);
-  }, [weather?.current?.sunrise, weather?.current?.sunset]);
+  }, [weather]);
 
   const content = (
     <>

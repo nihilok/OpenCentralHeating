@@ -52,11 +52,11 @@ function PressureGauge({ pressure }: Props) {
         id="pressure"
         percent={percent}
         nrOfLevels={30}
-        colors={["#FF5F6D"]}
+        colors={["#FF5F6D", "#97ff5f"]}
         arcWidth={0.3}
         formatTextValue={formatTextValue}
         animate={false}
-        style={{ height: "8.5rem" }}
+        className={"gauge-base"}
       />
       <p>Pressure</p>
     </div>
