@@ -57,6 +57,8 @@ function PressureGauge({ pressure }: Props) {
         formatTextValue={formatTextValue}
         animate={false}
         className={"gauge-base"}
+        needleColor={"#868686"}
+        needleBaseColor={"#868686"}
       />
       <p>Pressure</p>
     </div>

@@ -15,6 +15,7 @@ import {
   UPDATE_ALL,
   useHeatingSettings,
 } from "../../../context/HeatingContext";
+import { FullScreenComponent } from "../../Custom/FullScreenComponent";
 
 type Timeout = ReturnType<typeof setTimeout>;
 
@@ -35,8 +36,7 @@ export function HeatingSettingsContainer() {
   const [getPeriods, setGetPeriods] = React.useState(false);
   const lock = React.useRef(false);
 
-  const { heating, dispatch: heatingDispatch } =
-    useHeatingSettings();
+  const { heating, dispatch: heatingDispatch } = useHeatingSettings();
 
   React.useEffect(() => {
     fetch("/v2/heating/times").then((res) =>
@@ -139,7 +139,7 @@ export function HeatingSettingsContainer() {
   }, [heating.selectedPeriod, debounce]);
 
   return (
-    <>
+    <FullScreenComponent>
       <TopBar>
         <BackButton path={"/"} />
         <div />
@@ -149,6 +149,6 @@ export function HeatingSettingsContainer() {
         <TimeSlotsDisplay />
         <TemperatureControl />
       </div>
-    </>
+    </FullScreenComponent>
   );
 }

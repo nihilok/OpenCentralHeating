@@ -16,6 +16,8 @@ function HumidityGauge({ humidity }: Props) {
         arcWidth={0.3}
         animate={false}
         className={"gauge-base"}
+        needleColor={"#868686"}
+        needleBaseColor={"#868686"}
       />
       <p>Humidity</p>
     </div>

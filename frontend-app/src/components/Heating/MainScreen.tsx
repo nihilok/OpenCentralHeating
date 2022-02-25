@@ -1,17 +1,16 @@
 import * as React from "react";
 import "./heating.css";
 import classNames from "classnames";
-import {StyledTooltip} from "../Custom/StyledTooltip";
-import {TEMPERATURE_INTERVAL} from "../../constants/constants";
-import {useFetchWithToken} from "../../hooks/FetchWithToken";
-import {checkResponse} from "../../lib/helpers";
-import {FullScreenLoader} from "../Loaders/FullScreenLoader";
-import {FullScreenComponent} from "../Custom/FullScreenComponent";
-import {WeatherButton} from "../WeatherButton/WeatherButton";
-import {Barometer} from "../Barometer/Barometer";
-import {TopBar} from "../Custom/TopBar";
-import {ProgramOnOffSwitch} from "./ProgramOnOffSwitch";
-import {SettingsButton} from "../IconButtons/SettingsButton";
+import { StyledTooltip } from "../Custom/StyledTooltip";
+import { TEMPERATURE_INTERVAL } from "../../constants/constants";
+import { useFetchWithToken } from "../../hooks/FetchWithToken";
+import { checkResponse } from "../../lib/helpers";
+import { FullScreenLoader } from "../Loaders/FullScreenLoader";
+import { FullScreenComponent } from "../Custom/FullScreenComponent";
+import { WeatherButton } from "../WeatherButton/WeatherButton";
+import { TopBar } from "../Custom/TopBar";
+import { ProgramOnOffSwitch } from "./ProgramOnOffSwitch";
+import { SettingsButton } from "../IconButtons/SettingsButton";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
 import PressureGauge from "../Dials/PressureGauge";
 import HumidityGauge from "../Dials/HumidityGauge";
@@ -104,10 +103,10 @@ export function MainScreen() {
     <FullScreenComponent>
       <TopBar>
         <WeatherButton />
-        <SettingsButton helpMode={helpMode} setHelpMode={setHelpMode}/>
+        <SettingsButton />
       </TopBar>
       {isLoading ? (
-        <FullScreenLoader/>
+        <FullScreenLoader />
       ) : (
         <>
           <form className="heating-settings">
@@ -124,7 +123,7 @@ export function MainScreen() {
                   paddingLeft: "1.25rem",
                 }}
               >
-                <SwapVertIcon style={{marginLeft: "-1rem"}}/>
+                <SwapVertIcon style={{ marginLeft: "-1rem" }} />
                 {systemId === 3 ? "Upstairs:" : "Downstairs:"}
               </Button>
               <div>
@@ -151,11 +150,10 @@ export function MainScreen() {
             </div>
           </form>
           <div className={"gauges-container"}>
-            <PressureGauge pressure={readings.pressure}/>
-            <HumidityGauge humidity={readings.humidity / 100}/>
+            <PressureGauge pressure={readings.pressure} />
+            <HumidityGauge humidity={readings.humidity / 100} />
           </div>
         </>
-
       )}
       <ProgramOnOffSwitch
         state={programOn}

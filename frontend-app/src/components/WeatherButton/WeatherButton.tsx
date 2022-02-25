@@ -74,7 +74,7 @@ export function WeatherButton() {
 
     setSunrise(`${riseDate.getHours()}:${riseMins}`);
     setSunset(`${setDate.getHours()}:${setMins}`);
-  }, [weather]);
+  }, [weather?.current?.sunrise, weather?.current?.sunset]);
 
   const content = (
     <>
@@ -100,7 +100,7 @@ export function WeatherButton() {
           }}
           onClose={handleTooltipClose}
           open={open}
-          placement={"right-end"}
+          placement={"right"}
           disableFocusListener
           disableHoverListener
           disableTouchListener
