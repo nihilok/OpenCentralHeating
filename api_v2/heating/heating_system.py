@@ -54,7 +54,7 @@ class HeatingSystem:
         self.current_period = None
         loop = asyncio.get_running_loop()
         loop.create_task(self.main_loop(self.PROGRAM_LOOP_INTERVAL))
-        self.thermostat_logging_flag = self.too_cold
+        self.thermostat_logging_flag = None
 
     async def get_measurements(self) -> dict:
         try:
@@ -137,12 +137,12 @@ class HeatingSystem:
         self.measurements = await self.get_measurements()
         check = self.too_cold
         if check is True:
-            if not self.thermostat_logging_flag:
+            if self.thermostat_logging_flag is False:
                 logger.info("Too cold, switching on relay")
                 self.thermostat_logging_flag = True
             self.switch_on_relay()
         elif not check:
-            if self.thermostat_logging_flag:
+            if self.thermostat_logging_flag is True:
                 logger.info("Warm enough, switching off relay")
                 self.thermostat_logging_flag = False
             self.switch_off_relay()
