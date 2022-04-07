@@ -140,12 +140,12 @@ class HeatingSystem:
             self.thermostat_logging_flag = not self.too_cold
         if check is True:
             if self.thermostat_logging_flag is False:
-                logger.info("Too cold, switching on relay")
+                logger.info(f"Too cold, switching on relay [pin {self.gpio_pin}]")
                 self.thermostat_logging_flag = True
             self.switch_on_relay()
         elif not check:
             if self.thermostat_logging_flag is True:
-                logger.info("Warm enough, switching off relay")
+                logger.info(f"Warm enough, switching off relay [pin {self.gpio_pin}]")
                 self.thermostat_logging_flag = False
             self.switch_off_relay()
 
