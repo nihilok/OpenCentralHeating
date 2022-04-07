@@ -181,7 +181,7 @@ class HeatingSystem:
         self.current_period = await check_times(times, self.system_id)
         if self.current_period is not None:
             logger.debug(
-                f"{self.current_period.time_on}->{self.current_period.time_off} ({self.current_period.target}'C)"
+                f"{self.current_period.time_on}->{self.current_period.time_off} ({self.current_period.target}°C)"
             )
 
     async def new_time(self, period: PHeatingPeriod, user_id: int):
