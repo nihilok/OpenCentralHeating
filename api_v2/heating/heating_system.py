@@ -50,12 +50,11 @@ class HeatingSystem:
         self.system_id = system_id
         self.measurements = None
         self.program_on = json.loads(self.config.get("program_on", "false"))
-        # self.advance_on = None
-        # self.advance_end: int = 0
         self.household_id = household_id
         self.current_period = None
         loop = asyncio.get_running_loop()
         loop.create_task(self.main_loop(self.PROGRAM_LOOP_INTERVAL))
+        self.thermostat_logging_flag = self.too_cold
 
     async def get_measurements(self) -> dict:
         try:
@@ -138,10 +137,14 @@ class HeatingSystem:
         self.measurements = await self.get_measurements()
         check = self.too_cold
         if check is True:
-            logger.debug("too cold")
+            if not self.thermostat_logging_flag:
+                logger.info("Too cold, switching on relay")
+                self.thermostat_logging_flag = True
             self.switch_on_relay()
         elif not check:
-            logger.debug("warm enough")
+            if self.thermostat_logging_flag:
+                logger.info("Warm enough, switching off relay")
+                self.thermostat_logging_flag = False
             self.switch_off_relay()
 
     async def main_task(self):
@@ -165,39 +168,6 @@ class HeatingSystem:
         self.current_period = None
         await self.main_task()
 
-    # async def advance(self, mins: int = 30):
-    #     self.advance_on = time.time()
-    #     self.advance_end = self.advance_on + mins * 60
-    #     while self.advance_end > time.time():
-    #         if await self.within_time_period() or not self.advance_on:
-    #             await self.cancel_advance()
-    #             break
-    #         await self.thermostat_control()
-    #         await asyncio.sleep(60)
-    #
-    # async def start_advance(self, mins: int = 30):
-    #     if self.advance_on:
-    #         logger.info(
-    #             f"Advance requested when already started "
-    #             f"(started at {BritishTime.fromtimestamp(self.advance_on).strftime('%Y-%m-%d %H:%M:%S')})"
-    #         )
-    #         return self.advance_on
-    #     loop = asyncio.get_running_loop()
-    #     loop.create_task(self.advance(mins))
-    #     while not self.advance_on and not self.advance_end:
-    #         await asyncio.sleep(0.1)
-    #     logger.info(
-    #         f"Advance started (scheduled until {BritishTime.fromtimestamp(self.advance_end).strftime('%H:%M:%S')})"
-    #     )
-    #     return self.advance_on
-    #
-    # async def cancel_advance(self):
-    #     if self.advance_on:
-    #         self.advance_on = None
-    #         self.advance_end = 0
-    #         logger.info("Advance cancelled")
-    #     await self.main_task()
-
     async def get_current_time_period(self):
         logger.debug("Checking times")
         times = await get_times(self.household_id)
@@ -206,8 +176,6 @@ class HeatingSystem:
             logger.debug(
                 f"{self.current_period.time_on}->{self.current_period.time_off} ({self.current_period.target}'C)"
             )
-            # if self.advance_on:
-            #     await self.cancel_advance()
 
     async def new_time(self, period: PHeatingPeriod, user_id: int):
         _time = await new_time(self.household_id, period, user_id)

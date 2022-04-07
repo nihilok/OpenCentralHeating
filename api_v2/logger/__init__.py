@@ -7,7 +7,7 @@ BACKUP_LOG_FILE = "heating.log"
 
 def get_logger(name=__name__, level=logging.DEBUG):
     logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(level)
 
     formatter = logging.Formatter(
         "%(levelname)s:\t  %(message)s [%(asctime)s] (%(name)s)"
@@ -15,14 +15,14 @@ def get_logger(name=__name__, level=logging.DEBUG):
 
     try:
         fh = handlers.RotatingFileHandler(LOG_FILE, maxBytes=2000000, backupCount=2)
-        fh.setLevel(logging.INFO)
+        fh.setLevel(level)
         fh.setFormatter(formatter)
         logger.addHandler(fh)
     except PermissionError:
         fh = handlers.RotatingFileHandler(
             BACKUP_LOG_FILE, maxBytes=2000000, backupCount=2
         )
-        fh.setLevel(logging.INFO)
+        fh.setLevel(level)
         fh.setFormatter(formatter)
         logger.addHandler(fh)
     except Exception:
