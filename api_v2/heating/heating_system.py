@@ -165,11 +165,13 @@ class HeatingSystem:
 
     async def turn_program_on(self):
         self.program_on = True
+        logger.info(f'Program on [pin {self.gpio_pin}]')
         await self.main_task()
 
     async def turn_program_off(self):
         self.program_on = False
         self.current_period = None
+        logger.info(f'Program off [pin {self.gpio_pin}]')
         await self.main_task()
 
     async def get_current_time_period(self):
