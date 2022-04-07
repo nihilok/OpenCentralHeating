@@ -136,6 +136,8 @@ class HeatingSystem:
     async def thermostat_control(self):
         self.measurements = await self.get_measurements()
         check = self.too_cold
+        if self.thermostat_logging_flag is None:
+            self.thermostat_logging_flag = not self.too_cold
         if check is True:
             if self.thermostat_logging_flag is False:
                 logger.info("Too cold, switching on relay")
