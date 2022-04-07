@@ -63,14 +63,14 @@ export function WeatherButton() {
   }, [weatherCallback]);
 
   React.useEffect(() => {
-    const riseDate = new Date(weather?.current?.sunrise as number * 1000)
-    const setDate = new Date(weather?.current?.sunset as number * 1000)
+    const riseDate = new Date((weather?.current?.sunrise as number) * 1000);
+    const setDate = new Date((weather?.current?.sunset as number) * 1000);
 
-    let riseMins: string | number = riseDate.getMinutes()
-    let setMins: string | number = setDate.getMinutes()
+    let riseMins: string | number = riseDate.getMinutes();
+    let setMins: string | number = setDate.getMinutes();
 
-    if (riseMins < 10) riseMins = `0${riseMins}`
-    if (setMins < 10) setMins = `0${setMins}`
+    if (riseMins < 10) riseMins = `0${riseMins}`;
+    if (setMins < 10) setMins = `0${setMins}`;
 
     setSunrise(`${riseDate.getHours()}:${riseMins}`);
     setSunset(`${setDate.getHours()}:${setMins}`);

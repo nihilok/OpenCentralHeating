@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { styled } from '@mui/material';
-import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
-import {primary} from "../../constants/colors";
+import * as React from "react";
+import { styled } from "@mui/material";
+import Tooltip, { TooltipProps, tooltipClasses } from "@mui/material/Tooltip";
+import { primary } from "../../constants/colors";
 
 interface Props extends TooltipProps {
   disabled?: boolean;
@@ -9,11 +9,15 @@ interface Props extends TooltipProps {
   bottom?: boolean;
 }
 
-export const StyledTooltip = styled(({ className, ...props }: Props) => (
-  props.disabled ? <>{props.children}</> : <Tooltip {...props} classes={{ popper: className }}/>
-))({
+export const StyledTooltip = styled(({ className, ...props }: Props) =>
+  props.disabled ? (
+    <>{props.children}</>
+  ) : (
+    <Tooltip {...props} classes={{ popper: className }} />
+  )
+)({
   [`& .${tooltipClasses.tooltip}`]: {
     backgroundColor: primary[900],
-    marginTop: '2rem'
+    marginTop: "2rem",
   },
 });

@@ -11,7 +11,9 @@ async def get_system(system_id: int) -> HeatingSystemModel:
     return await HeatingSystemModel.get_by_system_id(system_id)
 
 
-async def create_system(system: PHeatingSystemIn, household_id: int) -> HeatingSystemModel:
+async def create_system(
+    system: PHeatingSystemIn, household_id: int
+) -> HeatingSystemModel:
     return await HeatingSystemModel.create(
         household_id=household_id, **system.dict(exclude_unset=True)
     )
@@ -32,13 +34,15 @@ async def create_instance(system_id: int) -> bool:
     return True
 
 
-async def get_system_instance_from_memory(system_id: int, household_id: int) -> HeatingSystem:
+async def get_system_instance_from_memory(
+    system_id: int, household_id: int
+) -> HeatingSystem:
     system = systems_in_memory.get(system_id)
     if system:
         if system.household_id == household_id:
             return system
-        raise ValueError('Household ID does not match system')
-    raise ValueError('System instance does not exist')
+        raise ValueError("Household ID does not match system")
+    raise ValueError("System instance does not exist")
 
 
 async def get_system_from_memory_http(system_id: int, household_id: int):

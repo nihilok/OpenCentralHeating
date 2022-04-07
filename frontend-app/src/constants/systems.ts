@@ -3,6 +3,6 @@ interface SystemNames {
 }
 
 export const systemNames: SystemNames = {
-  3: 'Upstairs',
-  4: 'Downstairs'
-}
+  3: "Upstairs",
+  4: "Downstairs",
+};

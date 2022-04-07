@@ -6,7 +6,7 @@ import { Slider, Stack } from "@mui/material";
 import { systemNames } from "../../constants/systems";
 import { ReducedTimeBlock } from "./ReducedTimeBlock";
 import { UnfoldMoreOutlined, UnfoldLessOutlined } from "@mui/icons-material";
-import {useSnackbar} from "notistack";
+import { useSnackbar } from "notistack";
 
 export interface TimePeriod {
   time_on: string;
@@ -25,7 +25,7 @@ export function TimeBlock({ timePeriod }: Props) {
 
   const fetch = useFetchWithToken();
   const { enqueueSnackbar } = useSnackbar();
-  const [error, setError] = React.useState<string | null>(null)
+  const [error, setError] = React.useState<string | null>(null);
   const [state, setState] = React.useState<TimePeriod>(timePeriod);
   const [expanded, setExpanded] = React.useState<boolean>(false);
   const timeout = React.useRef<Timeout>();
@@ -35,7 +35,7 @@ export function TimeBlock({ timePeriod }: Props) {
 
   const handleTimeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     lock.current = false;
-    resetState.current = state
+    resetState.current = state;
     setState((p) => ({
       ...p,
       [event.target.name]: event.target.value,
@@ -61,23 +61,19 @@ export function TimeBlock({ timePeriod }: Props) {
         },
       };
 
-      fetch(
-        "/v2/heating/times",
-        "PUT",
-        data
-      )
+      fetch("/v2/heating/times", "PUT", data)
         .then((res) => {
           if (res.status === 200) {
             res.json().then((resJson: TimePeriod) => {
               lock.current = true;
               setState(data);
-              setError(null)
+              setError(null);
             });
           } else if (res.status === 422) {
-            res.json().then((resJson: {detail: string;}) => {
-              setError(resJson.detail)
-              setState(resetState.current)
-            })
+            res.json().then((resJson: { detail: string }) => {
+              setError(resJson.detail);
+              setState(resetState.current);
+            });
           }
         })
         .then(() => (lock.current = false));
@@ -85,11 +81,11 @@ export function TimeBlock({ timePeriod }: Props) {
     [fetch]
   );
 
-  React.useEffect(()=>{
+  React.useEffect(() => {
     if (error) {
       enqueueSnackbar(error, { variant: "error" });
     }
-  }, [error, enqueueSnackbar])
+  }, [error, enqueueSnackbar]);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -108,7 +104,7 @@ export function TimeBlock({ timePeriod }: Props) {
 
   function handleSliderChange(event: Event, newValue: number | number[]) {
     lock.current = false;
-    resetState.current = state
+    resetState.current = state;
     setState((prev) => ({ ...prev, target: newValue as number }));
   }
 

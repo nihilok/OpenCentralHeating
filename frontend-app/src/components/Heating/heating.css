@@ -29,7 +29,7 @@
     font-size: 1.5rem;
     border-bottom: 2px solid;
     border-radius: 3px;
-    padding: .25rem;
+    padding: 0.25rem;
     width: max-content;
     margin: auto;
     top: 1.25rem;
@@ -54,23 +54,25 @@
     color: var(--primary-dark);
 }
 
-.heating-settings svg, .heating-settings img, .heating-settings object {
+.heating-settings svg,
+.heating-settings img,
+.heating-settings object {
     max-width: 20vw;
     object-fit: contain;
 }
 
 .arrow {
-  border: solid var(--muted);
-  border-width: 0 4px 4px 0;
-  display: inline-block;
-  padding: 3px;
-    width: .75rem;
-    height: .75rem;
+    border: solid var(--muted);
+    border-width: 0 4px 4px 0;
+    display: inline-block;
+    padding: 3px;
+    width: 0.75rem;
+    height: 0.75rem;
 }
 
 .right {
-  transform: rotate(-45deg);
-  -webkit-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
 }
 
 .disabled-arrow {
@@ -121,4 +123,18 @@
 .reduced-timeblock:first-of-type {
     border-top: 1px solid var(--muted);
     padding-top: 1rem;
+}
+
+.gauges-container {
+    text-align: center;
+}
+
+.gauges-container p {
+    margin-top: 0;
+}
+
+@media (min-width: 768px) {
+    .gauges-container {
+        display: flex;
+    }
 }

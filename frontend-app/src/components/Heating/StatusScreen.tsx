@@ -2,7 +2,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
 import { SimpleEllipsisLoader } from "../SimpleEllipsisLoader";
-import {Button} from "@mui/material";
+import { Button } from "@mui/material";
 
 interface HeatingResponse {
   indoor_temp: string;
@@ -66,7 +66,11 @@ export function StatusScreen() {
           {loading ? <SimpleEllipsisLoader loading={loading} /> : data.weather}
         </span>
       </p>
-      <Link to="/settings"><Button variant={'contained'} color={'primary'}>Settings</Button></Link>
+      <Link to="/settings">
+        <Button variant={"contained"} color={"primary"}>
+          Settings
+        </Button>
+      </Link>
     </div>
   );
 }
