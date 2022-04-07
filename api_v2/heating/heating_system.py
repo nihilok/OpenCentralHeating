@@ -166,6 +166,7 @@ class HeatingSystem:
     async def turn_program_on(self):
         self.program_on = True
         logger.info(f'Program on [pin {self.gpio_pin}]')
+        self.thermostat_logging_flag = None
         await self.main_task()
 
     async def turn_program_off(self):
