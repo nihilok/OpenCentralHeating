@@ -67,6 +67,7 @@ class HeatingSystem:
 
     def handle_request_errors(self, e):
         log_msg = None
+        self.switch_off_relay()
         if self.measurements is None:
             if self.errors["initial"]:
                 return
@@ -82,7 +83,6 @@ class HeatingSystem:
         if log_msg is not None:
             logger.error(log_msg)
             send_telegram_message(log_msg)
-        self.switch_off_relay()
 
     def reset_error_state(self):
         previous = False
