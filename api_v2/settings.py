@@ -1,3 +1,4 @@
+import logging
 import os
 
 DATABASE_URL = f"sqlite://{os.path.abspath(os.getcwd())}/db.sqlite3"
@@ -12,3 +13,5 @@ TORTOISE_ORM = {
     'use_tz': False,
     'timezone': 'UTC'
 }
+
+GLOBAL_LOG_LEVEL = logging.INFO
