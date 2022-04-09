@@ -37,7 +37,7 @@ class HeatingSystem:
     ):
         logger.info(
             f"Creating new instance of HeatingSystem\n"
-            f"\t  (GPIO_PIN: {gpio_pin}, TEMPERATURE_URL: {temperature_url})"
+            f"(GPIO_PIN: {gpio_pin}, TEMPERATURE_URL: {temperature_url})"
         )
         if test:
             self.pi = fake_pi()
@@ -158,7 +158,7 @@ class HeatingSystem:
         await self.thermostat_control()
 
     async def main_loop(self, interval: int = 60):
-        logger.info("Main loop starting")
+        logger.debug("Main loop starting")
         while True:
             await self.main_task()
             await asyncio.sleep(interval)
