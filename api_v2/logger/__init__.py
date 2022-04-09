@@ -10,7 +10,7 @@ def get_logger(name=__name__, level=logging.DEBUG):
     logger.setLevel(level)
 
     formatter = logging.Formatter(
-        "[%(asctime)s]\t:%(levelname)s:\t%(message)s"
+        "[%(asctime)s] :%(levelname)s: %(message)s"
     )
 
     try:
