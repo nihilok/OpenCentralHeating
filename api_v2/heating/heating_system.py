@@ -14,8 +14,9 @@ from ..models import PHeatingPeriod
 from ..utils import send_telegram_message, get_json  # , BritishTime
 from ..logger import get_logger
 from ..secrets import initialized_config as config
+from api_v2.settings import GLOBAL_LOG_LEVEL
 
-logger = get_logger(__name__, level=logging.INFO)
+logger = get_logger(__name__, level=GLOBAL_LOG_LEVEL)
 
 
 class HeatingSystem:
