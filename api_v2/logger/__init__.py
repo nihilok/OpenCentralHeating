@@ -14,7 +14,7 @@ def get_logger(name=__name__, level=logging.DEBUG):
     )
 
     try:
-        fh = handlers.RotatingFileHandler(LOG_FILE, maxBytes=2000000, backupCount=2)
+        fh = handlers.RotatingFileHandler(LOG_FILE, maxBytes=200000, backupCount=2)
         fh.setLevel(level)
         fh.setFormatter(formatter)
         logger.addHandler(fh)
