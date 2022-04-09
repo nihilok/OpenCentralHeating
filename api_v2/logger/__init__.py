@@ -10,11 +10,11 @@ def get_logger(name=__name__, level=logging.DEBUG):
     logger.setLevel(level)
 
     formatter = logging.Formatter(
-        "[%(asctime)s] :%(levelname)s: %(message)s"
+        "[%(asctime)s] [%(levelname)s] %(message)s"
     )
 
     try:
-        fh = handlers.RotatingFileHandler(LOG_FILE, maxBytes=200000, backupCount=2)
+        fh = handlers.RotatingFileHandler(LOG_FILE, maxBytes=100000, backupCount=2)
         fh.setLevel(level)
         fh.setFormatter(formatter)
         logger.addHandler(fh)
