@@ -137,7 +137,7 @@ class HeatingSystem:
         self.measurements = await self.get_measurements()
         check = self.too_cold
         if self.thermostat_logging_flag is None:
-            self.thermostat_logging_flag = not self.too_cold
+            self.thermostat_logging_flag = not check
         if check is True:
             if self.thermostat_logging_flag is False:
                 logger.info(f"Too cold ({self.measurements['temperature']}°C/{self.current_period.target}°C), switching on relay [pin {self.gpio_pin}]")
