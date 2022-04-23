@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+BACKUP_LOCATION=/home/mj/.backup/db_backups/$2
+
+mkdir -p $BACKUP_LOCATION
+
+echo "Backing up $1 to $BACKUP_LOCATION"
+sqlite3 $1 ".backup $BACKUP_LOCATION/$(date +%m-%d-%Y-%H-%M).sqlite"
+echo "Done"
