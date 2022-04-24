@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import "./components/Custom/layouts.css";
 import App from "./App";
+import "../src/components/Dials/Gauges.css";
 import { BrowserRouter as Router } from "react-router-dom";
 import { AuthContextProvider } from "./context/AuthContext";
 import { SnackbarProvider } from "notistack";
