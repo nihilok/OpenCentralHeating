@@ -16,6 +16,8 @@ import SwapVertIcon from "@mui/icons-material/SwapVert";
 import {Button} from "@mui/material";
 import PressureGauge from "../Dials/PressureGauge";
 import HumidityGauge from "../Dials/HumidityGauge";
+import { Button } from "@mui/material";
+import { SET_SYSTEM, useHeatingSettings } from "../../context/HeatingContext";
 
 interface Sensors {
   temperature: number;
@@ -30,7 +32,7 @@ export interface APIResponse {
   target: number;
 }
 
-export function SettingsForm() {
+export function MainScreen() {
   const fetch = useFetchWithToken();
   const [readings, setReadings] = React.useState({
     temperature: 0,
@@ -46,6 +48,7 @@ export function SettingsForm() {
   const [systemId, setSystemId] = React.useState(
     parseInt(localStorage.getItem("currentSystem") as string) || 3
   );
+  const { dispatch: heatingSettingsDispatch } = useHeatingSettings();
 
   const handleSystemChange = () => {
     if (systemId === 3) {
@@ -56,6 +59,15 @@ export function SettingsForm() {
       setSystemId(3);
     }
   };
+
+  React.useEffect(() => {
+    heatingSettingsDispatch({
+      type: SET_SYSTEM,
+      payload: {
+        currentSystem: systemId,
+      },
+    });
+  }, [systemId, heatingSettingsDispatch]);
 
   const parseData = React.useCallback((data: APIResponse) => {
     checkResponse(data.sensor_readings, setReadings);
@@ -92,8 +104,8 @@ export function SettingsForm() {
   return (
     <FullScreenComponent>
       <TopBar>
-        <WeatherButton/>
-        <SettingsButton helpMode={helpMode} setHelpMode={setHelpMode}/>
+        <WeatherButton />
+        <SettingsButton />
       </TopBar>
       {isLoading ? (
         <FullScreenLoader/>

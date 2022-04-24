@@ -1,9 +1,8 @@
 import * as React from "react";
 import { Stack, Switch } from "@mui/material";
 import AcUnitIcon from "@mui/icons-material/AcUnit";
-import { StyledTooltip } from "../Custom/StyledTooltip";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
-import { APIResponse } from "./SettingsForm";
+import { APIResponse } from "./MainScreen";
 
 interface Props {
   state: boolean;
