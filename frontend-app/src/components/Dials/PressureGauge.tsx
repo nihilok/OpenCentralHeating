@@ -47,7 +47,7 @@ function PressureGauge({ pressure }: Props) {
   );
 
   return (
-    <div>
+    <div className="gauge-container">
       <GaugeChart
         id="pressure"
         percent={percent}
@@ -56,7 +56,7 @@ function PressureGauge({ pressure }: Props) {
         arcWidth={0.3}
         formatTextValue={formatTextValue}
         animate={false}
-        style={{ height: "8.5rem" }}
+        className="gauge-chart"
       />
       <p>Pressure</p>
     </div>

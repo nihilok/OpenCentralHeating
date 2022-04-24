@@ -127,6 +127,7 @@
 
 .gauges-container {
     text-align: center;
+    width: 50%;
 }
 
 .gauges-container p {
