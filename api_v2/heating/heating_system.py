@@ -14,8 +14,9 @@ from ..models import PHeatingPeriod
 from ..utils import send_telegram_message, get_json  # , BritishTime
 from ..logger import get_logger
 from ..secrets import initialized_config as config
+from api_v2.settings import GLOBAL_LOG_LEVEL
 
-logger = get_logger(__name__, level=logging.INFO)
+logger = get_logger(__name__, level=GLOBAL_LOG_LEVEL)
 
 
 class HeatingSystem:
@@ -36,7 +37,7 @@ class HeatingSystem:
     ):
         logger.info(
             f"Creating new instance of HeatingSystem\n"
-            f"\t  (GPIO_PIN: {gpio_pin}, TEMPERATURE_URL: {temperature_url})"
+            f"(GPIO_PIN: {gpio_pin}, TEMPERATURE_URL: {temperature_url})"
         )
         if test:
             self.pi = fake_pi()
@@ -136,16 +137,18 @@ class HeatingSystem:
         self.measurements = await self.get_measurements()
         check = self.too_cold
         if self.thermostat_logging_flag is None:
-            self.thermostat_logging_flag = not self.too_cold
+            self.thermostat_logging_flag = not check
         if check is True:
             if self.thermostat_logging_flag is False:
-                logger.info(f"Too cold ({self.measurements['temperature']}°C), switching on relay [pin {self.gpio_pin}]")
+                logger.info(
+                    f"Too cold ({self.measurements['temperature']}°C/{self.current_period.target}°C), switching on relay [pin {self.gpio_pin}]"
+                )
                 self.thermostat_logging_flag = True
             self.switch_on_relay()
         elif not check:
             if self.thermostat_logging_flag is True:
                 logger.info(
-                    f"Warm enough ({self.measurements['temperature']}°C), switching off relay [pin {self.gpio_pin}]"
+                    f"Warm enough ({self.measurements['temperature']}°C/{self.current_period.target}°C), switching off relay [pin {self.gpio_pin}]"
                 )
                 self.thermostat_logging_flag = False
             self.switch_off_relay()
@@ -157,7 +160,7 @@ class HeatingSystem:
         await self.thermostat_control()
 
     async def main_loop(self, interval: int = 60):
-        logger.info("Main loop starting")
+        logger.debug("Main loop starting")
         while True:
             await self.main_task()
             await asyncio.sleep(interval)

@@ -3,10 +3,11 @@ import asyncio
 import aioredis
 
 from api_v2.logger import get_logger
+from api_v2.settings import GLOBAL_LOG_LEVEL
 
 cache_singleton = None
 
-logger = get_logger(__name__)
+logger = get_logger(__name__, level=GLOBAL_LOG_LEVEL)
 
 
 class RedisCache:
