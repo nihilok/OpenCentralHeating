@@ -37,7 +37,10 @@ async def get_heating_info(
         hs = await get_system_from_memory_http(system_id, user.household_id)
         measurements = await hs.get_measurements()
         if any(hs.errors.values()):
-            return JSONResponse(status_code=500, content={"message": f"System {system_id} not responding"})
+            return JSONResponse(
+                status_code=500,
+                content={"message": f"System {system_id} not responding"},
+            )
         system_info = SystemInfo(
             sensor_readings=measurements,
             relay_on=hs.relay_state,
@@ -54,7 +57,7 @@ async def get_heating_info(
                 system_from_db.system_id, user.household_id
             )
             system_info = SystemInfo(
-                sensor_readings = await system.get_measurements() or {},
+                sensor_readings=await system.get_measurements() or {},
                 relay_on=system.relay_state,
                 program_on=system.program_on,
                 target=system.current_period.target if system.current_period else 5,
@@ -84,7 +87,7 @@ async def get_heating_periods(
         periods=[
             PHeatingPeriod(
                 **period.dict(exclude_unset=True),
-                heating_system_id=period.heating_system.system_id
+                heating_system_id=period.heating_system.system_id,
             )
             for period in await get_times(user.household_id)
         ]

@@ -22,8 +22,9 @@ from ..models import (
     PasswordChange,
 )
 from ..logger import get_logger
+from ..settings import GLOBAL_LOG_LEVEL
 
-logger = get_logger(__name__)
+logger = get_logger(__name__, level=GLOBAL_LOG_LEVEL)
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -75,7 +76,7 @@ def create_access_token(data: dict):
 def decode_jwt(token: str) -> dict:
     try:
         decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        logger.debug(f'TOKEN DATA: {json.dumps(decoded_token)}')
+        logger.debug(f"TOKEN DATA: {json.dumps(decoded_token)}")
         return decoded_token if decoded_token["expires"] >= time.time() else None
     except Exception:
         return {"message": "token expired, please log in again"}
@@ -108,14 +109,14 @@ async def get_current_active_user(
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> Token:
-    logger.debug(f'Attempted login from {form_data.username}')
+    logger.debug(f"Attempted login from {form_data.username}")
     user = await authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
-    logger.debug(f'Login successful for {form_data.username}')
+    logger.debug(f"Login successful for {form_data.username}")
     access_token = create_access_token(data={"sub": user.name})
     return Token(access_token=access_token, token_type="bearer")
 

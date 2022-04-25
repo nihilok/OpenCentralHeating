@@ -2,20 +2,23 @@ import sys
 import time
 
 import uos, machine, gc
+
 gc.collect()
 
 import network
+
 sta_if = network.WLAN(network.STA_IF)
 if not sta_if.isconnected():
-    print('\nconnecting to network...')
+    print("\nconnecting to network...")
     sta_if.active(True)
-    sta_if.connect('<WIFI SSID>', '<WIFI PASSWORD>')
+    sta_if.connect("<WIFI SSID>", "<WIFI PASSWORD>")
     while not sta_if.isconnected():
         pass
-print('\nnetwork config:', sta_if.ifconfig())
+print("\nnetwork config:", sta_if.ifconfig())
 
 import json
 from BME280 import BME280
+
 i2c = machine.I2C(scl=machine.Pin(5), sda=machine.Pin(4), freq=10000)
 bme = BME280(i2c=i2c)
 
@@ -41,18 +44,23 @@ def main(micropython_optimize=False):
     counter = 0
     while True:
         cl, addr = s.accept()
-        print('client connected from', addr)
-        cl_file = cl.makefile('rwb', 0)
+        print("client connected from", addr)
+        cl_file = cl.makefile("rwb", 0)
         while True:
             line = cl_file.readline()
-            if not line or line == b'\r\n':
+            if not line or line == b"\r\n":
                 break
-        response = json.dumps({'temperature': bme.temperature,
-                               'pressure': bme.pressure,
-                               'humidity': bme.humidity})
-        cl.send('HTTP/1.0 200 OK\r\nContent-type: application/json\r\n\r\n')
+        response = json.dumps(
+            {
+                "temperature": bme.temperature,
+                "pressure": bme.pressure,
+                "humidity": bme.humidity,
+            }
+        )
+        cl.send("HTTP/1.0 200 OK\r\nContent-type: application/json\r\n\r\n")
         cl.send(response)
         cl.close()
+
 
 # rtc = machine.RTC()
 #
@@ -69,6 +77,6 @@ except KeyboardInterrupt:
 except Exception as e:
     print(e.__class__.__name__)
     print(e)
-    print('RESETTING MICROCONTROLLER')
+    print("RESETTING MICROCONTROLLER")
     time.sleep(2)
     machine.reset()

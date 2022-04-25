@@ -20,4 +20,4 @@ class HouseholdMember(Model):
         return pwd_context.verify(password, self.password_hash)
 
     class Meta:
-        table = 'household_member'
+        table = "household_member"

@@ -46,15 +46,17 @@ class PHeatingPeriod(BaseModel):
 
     @root_validator
     def check_order(cls, v):
-        time_on = datetime.strptime(v.get('time_on'), '%H:%M')
-        time_off = datetime.strptime(v.get('time_off'), '%H:%M')
+        time_on = datetime.strptime(v.get("time_on"), "%H:%M")
+        time_off = datetime.strptime(v.get("time_off"), "%H:%M")
         if time_on >= time_off:
-            raise ValueError('On-time cannot be after off-time')
+            raise ValueError("On-time cannot be after off-time")
         return v
 
 
-HeatingPeriodModelCreator = pydantic_model_creator(HeatingPeriod, name='HeatingPeriod')
-HeatingSystemModelCreator = pydantic_model_creator(HeatingSystemModel, name='HeatingSystem')
+HeatingPeriodModelCreator = pydantic_model_creator(HeatingPeriod, name="HeatingPeriod")
+HeatingSystemModelCreator = pydantic_model_creator(
+    HeatingSystemModel, name="HeatingSystem"
+)
 
 
 class PHeatingSystemIn(BaseModel):

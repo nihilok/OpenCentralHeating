@@ -9,9 +9,7 @@ def get_logger(name=__name__, level=logging.DEBUG):
     logger = logging.getLogger(name)
     logger.setLevel(level)
 
-    formatter = logging.Formatter(
-        "[%(asctime)s] [%(levelname)s] %(message)s"
-    )
+    formatter = logging.Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
 
     try:
         fh = handlers.RotatingFileHandler(LOG_FILE, maxBytes=100000, backupCount=2)
@@ -39,5 +37,5 @@ def get_logger(name=__name__, level=logging.DEBUG):
 
 
 if __name__ == "__main__":
-    l = get_logger('test')
+    l = get_logger("test")
     l.info("hello\n\t\t  hello")

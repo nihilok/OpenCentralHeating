@@ -10,8 +10,8 @@ TORTOISE_ORM = {
     "apps": {
         "models": {"models": TORTOISE_MODELS_LIST, "default_connection": "default"}
     },
-    'use_tz': False,
-    'timezone': 'UTC'
+    "use_tz": False,
+    "timezone": "UTC",
 }
 
 GLOBAL_LOG_LEVEL = logging.INFO

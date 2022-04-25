@@ -3,7 +3,7 @@ from . import initialized_config as config
 
 LOCAL = True
 
-superusers = json.loads(config['SUPERUSERS'].get('superuser_list', '[]'))
+superusers = json.loads(config["SUPERUSERS"].get("superuser_list", "[]"))
 SUPERUSERS = superusers
 GUEST_IDS = []
 

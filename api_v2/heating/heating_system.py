@@ -1,17 +1,14 @@
 import asyncio
 import json
 
-# import time
-import logging
 from typing import Optional
 
 import pigpio
-import requests
 
 from .fake_pi import fake_pi
 from .manage_times import check_times, get_times, new_time
 from ..models import PHeatingPeriod
-from ..utils import get_json  # , BritishTime, send_telegram_message, 
+from ..utils import get_json
 from ..logger import get_logger
 from ..secrets import initialized_config as config
 from api_v2.settings import GLOBAL_LOG_LEVEL
@@ -84,7 +81,6 @@ class HeatingSystem:
             )
         if log_msg is not None:
             logger.error(log_msg)
-            # send_telegram_message(log_msg)
 
     def reset_error_state(self):
         previous = False
@@ -93,7 +89,6 @@ class HeatingSystem:
                 previous = True
                 self.errors[key] = False
         if previous:
-            send_telegram_message(f"Contact with {self.temperature_url} resumed")
             logger.warning(f"Contact with {self.temperature_url} resumed")
 
     @property
@@ -112,8 +107,7 @@ class HeatingSystem:
             raise Exception(f"No temperature measurement available {self.gpio_pin}")
         if self.current_period is None:
             return self.temperature <= self.MINIMUM_TEMP
-        msg = f"target: {self.current_period.target}, current: {self.temperature}"
-        logger.debug(msg)
+        logger.debug(f"target: {self.current_period.target}, current: {self.temperature}")
         return self.temperature <= self.current_period.target - self.THRESHOLD
 
     def switch_on_relay(self):
@@ -133,22 +127,26 @@ class HeatingSystem:
         except Exception as e:
             logger.warning(e)
             self.switch_off_relay()
-            logger.info(f'Error getting temperature {self.gpio_pin=}')
+            logger.info(f"Error getting temperature {self.gpio_pin=}")
             return
         if self.thermostat_logging_flag is None:
             self.thermostat_logging_flag = not check
         if check is True:
             if self.thermostat_logging_flag is False:
                 if self.current_period is not None:
-                    logger.info(f"Too cold ({self.measurements['temperature']}°C/{self.current_period.target}°C), switching on relay [pin {self.gpio_pin}]")
+                    logger.info(
+                        f"Too cold ({self.measurements['temperature']}°C/{self.current_period.target}°C), "
+                        f"switching on relay [pin {self.gpio_pin}]"
+                    )
                 self.thermostat_logging_flag = True
             self.switch_on_relay()
         elif not check:
             if self.thermostat_logging_flag is True:
                 if self.current_period is not None:
                     logger.info(
-                    f"Warm enough ({self.measurements['temperature']}°C/{self.current_period.target}°C), switching off relay [pin {self.gpio_pin}]"
-                )
+                        f"Warm enough ({self.measurements['temperature']}°C/{self.current_period.target}°C), "
+                        f"switching off relay [pin {self.gpio_pin}]"
+                    )
                 self.thermostat_logging_flag = False
             self.switch_off_relay()
 
@@ -157,7 +155,7 @@ class HeatingSystem:
         if self.program_on:
             await self.get_current_time_period()
         else:
-            self.current_time_period = None
+            self.current_period = None
         await self.thermostat_control()
 
     async def main_loop(self, interval: int = 60):
@@ -168,14 +166,14 @@ class HeatingSystem:
 
     async def turn_program_on(self):
         self.program_on = True
-        logger.info(f'Program on [pin {self.gpio_pin}]')
+        logger.info(f"Program on [pin {self.gpio_pin}]")
         self.thermostat_logging_flag = None
         await self.main_task()
 
     async def turn_program_off(self):
         self.program_on = False
         self.current_period = None
-        logger.info(f'Program off [pin {self.gpio_pin}]')
+        logger.info(f"Program off [pin {self.gpio_pin}]")
         await self.main_task()
 
     async def get_current_time_period(self):
