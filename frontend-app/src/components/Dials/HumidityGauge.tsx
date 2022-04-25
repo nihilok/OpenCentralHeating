@@ -11,7 +11,7 @@ function HumidityGauge({ humidity }: Props) {
         id="gauge-chart2"
         percent={humidity}
         nrOfLevels={30}
-        colors={["#6C4FF3"]}
+        colors={["#6C4FF3", "#4e24ff", "#2b00ff"]}
         arcWidth={0.3}
         animate={false}
         className="gauge-chart"

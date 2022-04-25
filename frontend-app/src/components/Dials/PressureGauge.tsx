@@ -52,7 +52,7 @@ function PressureGauge({ pressure }: Props) {
         id="pressure"
         percent={percent}
         nrOfLevels={30}
-        colors={["#FF5F6D"]}
+        colors={["#FF5F6D", "#ffd080", "#a88c01"]}
         arcWidth={0.3}
         formatTextValue={formatTextValue}
         animate={false}
