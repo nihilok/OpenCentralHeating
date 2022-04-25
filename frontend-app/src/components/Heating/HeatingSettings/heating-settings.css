@@ -1,0 +1,77 @@
+.heating-settings-container {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  grid-template-rows: 1fr 1fr;
+  place-items: center;
+  max-width: 500px;
+  margin: auto;
+  padding-top: 6rem;
+  padding-right: 2rem;
+  height: 90vh;
+}
+
+.temperature-control {
+  grid-column: 2;
+}
+
+.timeslot-picker {
+  grid-row: 1 / -1;
+  height: 100%;
+  padding: 1rem 0;
+}
+
+.timeslot-list {
+  list-style-type: none;
+  padding: 1rem 0.25rem 0;
+  margin: 0 auto;
+  overflow-y: auto;
+  max-height: 25vh;
+  min-height: 25vh;
+  min-width: 14vw;
+  font-size: 1rem;
+}
+
+.timeslot-list > li {
+  cursor: pointer;
+  padding: 0.5rem;
+  margin: 0;
+  text-align: center;
+  position: relative;
+  color: #ffa500;
+  text-shadow: 0 0 2px;
+}
+
+.temperature-control {
+  height: 100%;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.temperature-control > h1 {
+  font-size: calc(12vmin + 1rem);
+}
+
+li.selected {
+  color: white;
+  text-shadow: 0 0 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0),
+    rgba(0, 15, 0, 0.3),
+    rgba(0, 0, 0, 0)
+  );
+}
+
+.slots-display-screen {
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+  margin-top: 1.5rem;
+  margin-right: 0.25rem;
+  box-shadow: inset 0 0 10px rgba(0, 15, 0, 0.9);
+  grid-column: 2;
+}

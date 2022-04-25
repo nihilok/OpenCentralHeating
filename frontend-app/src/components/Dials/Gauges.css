@@ -1,0 +1,8 @@
+.gauge-chart {
+    height: 20vmin;
+}
+
+.gauge-container {
+    flex: 1;
+    margin: 2rem auto;
+}
