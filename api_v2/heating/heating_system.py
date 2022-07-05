@@ -1,23 +1,28 @@
 import asyncio
 import json
+from json import JSONDecodeError
 
 from typing import Optional
 
 import pigpio
-
+import os
+from pathlib import Path
 from .fake_pi import fake_pi
 from .manage_times import check_times, get_times, new_time
 from ..models import PHeatingPeriod
 from ..utils import get_json
 from ..logger import get_logger
-from ..secrets import initialized_config as config
 from api_v2.settings import GLOBAL_LOG_LEVEL
 
 logger = get_logger(__name__, level=GLOBAL_LOG_LEVEL)
 
 
+CONFIG_PATH = Path(os.path.dirname(__file__))
+CONFIG_FILE = CONFIG_PATH / "config.json"
+DEFAULT_CONFIG = {"program_on": []}
+
+
 class HeatingSystem:
-    config = config["HEATING"]
     THRESHOLD = 0.2
     PROGRAM_LOOP_INTERVAL = 60
     MINIMUM_TEMP = 5
@@ -47,12 +52,23 @@ class HeatingSystem:
         self.errors = {"temporary": False, "initial": False}
         self.system_id = system_id
         self.measurements = None
-        self.program_on = json.loads(self.config.get("program_on", "false"))
+        self.config = self.init_config()
+        self.program_on = self.system_id in map(int, self.config["program_on"])
         self.household_id = household_id
         self.current_period = None
         loop = asyncio.get_running_loop()
         loop.create_task(self.main_loop(self.PROGRAM_LOOP_INTERVAL))
         self.thermostat_logging_flag = None
+
+    @staticmethod
+    def init_config():
+        try:
+            with open(CONFIG_FILE, "r") as c:
+                config = json.load(c)
+        except (FileNotFoundError, JSONDecodeError):
+            with open(CONFIG_FILE, "w") as c:
+                json.dump(DEFAULT_CONFIG, c)
+        return config
 
     async def get_measurements(self) -> dict:
         try:
@@ -107,7 +123,9 @@ class HeatingSystem:
             raise Exception(f"No temperature measurement available {self.gpio_pin}")
         if self.current_period is None:
             return self.temperature <= self.MINIMUM_TEMP
-        logger.debug(f"target: {self.current_period.target}, current: {self.temperature}")
+        logger.debug(
+            f"target: {self.current_period.target}, current: {self.temperature}"
+        )
         return self.temperature <= self.current_period.target - self.THRESHOLD
 
     def switch_on_relay(self):
@@ -166,12 +184,14 @@ class HeatingSystem:
 
     async def turn_program_on(self):
         self.program_on = True
+        self.update_config()
         logger.info(f"Program on [pin {self.gpio_pin}]")
         self.thermostat_logging_flag = None
         await self.main_task()
 
     async def turn_program_off(self):
         self.program_on = False
+        self.update_config()
         self.current_period = None
         logger.info(f"Program off [pin {self.gpio_pin}]")
         await self.main_task()
@@ -191,3 +211,15 @@ class HeatingSystem:
         if _check:
             self.current_period = _check
         return _time
+
+    @property
+    def system_was_on(self):
+        return self.system_id in map(int, self.config["program_on"])
+
+    def update_config(self):
+        if self.program_on and not self.system_was_on:
+            self.config["program_on"].append(self.system_id)
+        elif not self.program_on and self.system_was_on:
+            self.config["program_on"].remove(self.system_id)
+        with open(CONFIG_FILE, "w") as f:
+            json.dump(self.config, f)
