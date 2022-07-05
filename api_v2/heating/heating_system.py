@@ -53,7 +53,7 @@ class HeatingSystem:
         self.system_id = system_id
         self.measurements = None
         self.config = self.init_config()
-        self.program_on = self.system_id in map(int, self.config["program_on"])
+        self.program_on = self.system_was_on
         self.household_id = household_id
         self.current_period = None
         loop = asyncio.get_running_loop()
