@@ -217,9 +217,9 @@ class HeatingSystem:
         return _time
 
     def update_config(self):
-        if self.program_on and not self.system_was_on:
+        if self.program_on and not self.system_was_on():
             self.config["program_on"].append(self.system_id)
-        elif not self.program_on and self.system_was_on:
+        elif not self.program_on and self.system_was_on():
             self.config["program_on"].remove(self.system_id)
         with open(CONFIG_FILE, "w") as f:
             json.dump(self.config, f)
