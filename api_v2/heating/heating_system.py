@@ -20,13 +20,13 @@ logger = get_logger(__name__, level=GLOBAL_LOG_LEVEL)
 CONFIG_PATH = Path(os.path.dirname(__file__))
 CONFIG_FILE = CONFIG_PATH / "config.json"
 DEFAULT_CONFIG = {"program_on": []}
+DEFAULT_PROGRAM_LOOP_INTERVAL = 60
 
 
 class HeatingSystem:
     THRESHOLD = 0.2
-    PROGRAM_LOOP_INTERVAL = 60
     MINIMUM_TEMP = 5
-    PIN_STATE_ON = 0
+    PIN_ON_STATE = 0
 
     def __init__(
         self,
@@ -34,6 +34,7 @@ class HeatingSystem:
         temperature_url: str,
         system_id: int,
         household_id: int,
+        interval: int = DEFAULT_PROGRAM_LOOP_INTERVAL,
         test: bool = False,
         raspberry_pi_ip: Optional[str] = None,
     ):
@@ -49,16 +50,16 @@ class HeatingSystem:
             self.pi = pigpio.pi(raspberry_pi_ip)
         self.gpio_pin = gpio_pin
         self.temperature_url = temperature_url
-        self.errors = {"temporary": False, "initial": False}
         self.system_id = system_id
-        self.measurements = None
-        self.config = self.init_config()
-        self.program_on = self.system_was_on
         self.household_id = household_id
+        self.measurements = None
         self.current_period = None
-        loop = asyncio.get_running_loop()
-        loop.create_task(self.main_loop(self.PROGRAM_LOOP_INTERVAL))
         self.thermostat_logging_flag = None
+        self.errors = {"temporary": False, "initial": False}
+        self.config = self.init_config()
+        self.program_on = self.system_was_on()
+        loop = asyncio.get_running_loop()
+        loop.create_task(self.main_loop(interval))
 
     @staticmethod
     def init_config():
@@ -69,6 +70,9 @@ class HeatingSystem:
             with open(CONFIG_FILE, "w") as c:
                 json.dump(DEFAULT_CONFIG, c)
         return config
+
+    def system_was_on(self):
+        return self.system_id in map(int, self.config["program_on"])
 
     async def get_measurements(self) -> dict:
         try:
@@ -115,7 +119,7 @@ class HeatingSystem:
     @property
     def relay_state(self) -> bool:
         state = self.pi.read(self.gpio_pin)
-        return not state if self.PIN_STATE_ON == 0 else not not state
+        return not state if self.PIN_ON_STATE == 0 else not not state
 
     @property
     def too_cold(self) -> Optional[bool]:
@@ -131,12 +135,12 @@ class HeatingSystem:
     def switch_on_relay(self):
         if not self.relay_state:
             logger.debug(f"Switching on relay {self.gpio_pin=}")
-            self.pi.write(self.gpio_pin, self.PIN_STATE_ON)
+            self.pi.write(self.gpio_pin, self.PIN_ON_STATE)
 
     def switch_off_relay(self):
         if self.relay_state:
             logger.debug(f"Switching off relay {self.gpio_pin=}")
-            self.pi.write(self.gpio_pin, 1 if self.PIN_STATE_ON == 0 else 0)
+            self.pi.write(self.gpio_pin, 1 if self.PIN_ON_STATE == 0 else 0)
 
     async def thermostat_control(self):
         self.measurements = await self.get_measurements()
@@ -211,10 +215,6 @@ class HeatingSystem:
         if _check:
             self.current_period = _check
         return _time
-
-    @property
-    def system_was_on(self):
-        return self.system_id in map(int, self.config["program_on"])
 
     def update_config(self):
         if self.program_on and not self.system_was_on:
